@@ -9,14 +9,29 @@
 <body>
   <div id="home-screen">
     <div class="titlebar"></div>
+
     <div class="home-header">
       <h1>My Charts</h1>
       <button class="btn btn-primary" id="new-chart-btn">+ New Chart</button>
     </div>
+
     <div class="chart-list" id="chart-list">
       <!-- populated by home.js -->
     </div>
   </div>
+
+  <!-- New / Rename chart modal -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">New Chart</h2>
+      <input type="text" id="modal-input" placeholder="Chart name" maxlength="80" />
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
   <script src="home.js"></script>
 </body>
 </html>
