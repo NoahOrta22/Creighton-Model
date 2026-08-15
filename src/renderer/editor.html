@@ -5,14 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chart Editor</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
-    h2 { color: var(--brown); font-size: 20px; }
-  </style>
 </head>
 <body>
-  <div class="titlebar"></div>
-  <h2>Editor — coming soon</h2>
-  <button class="btn btn-secondary" onclick="location.href='home.html'">← Back to Home</button>
+  <div id="editor-screen">
+
+    <!-- Top toolbar -->
+    <div class="editor-toolbar">
+      <button class="btn btn-ghost" id="back-btn">← Charts</button>
+      <span class="chart-name-display" id="chart-name-display">Loading…</span>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="export-btn" disabled title="Coming soon">Export</button>
+        <button class="btn btn-primary" id="save-btn" disabled title="Coming soon">Save</button>
+      </div>
+    </div>
+
+    <!-- Stamp picker -->
+    <div class="stamp-toolbar">
+      <span class="stamp-toolbar-label">Stamp</span>
+      <div class="stamp-picker">
+        <button class="stamp-option active" data-stamp="red" title="Red — Menstruation/bleeding">
+          <img src="../../assets/red-stamp.jpeg" alt="Red" />
+        </button>
+        <button class="stamp-option" data-stamp="yellow" title="Yellow — Same discharge pattern">
+          <img src="../../assets/yellow-stamp.jpeg" alt="Yellow" />
+        </button>
+        <button class="stamp-option" data-stamp="green" title="Green — Dry / infertile">
+          <img src="../../assets/green-stamp.png" alt="Green" />
+        </button>
+        <button class="stamp-option" data-stamp="yellow-baby" title="Yellow Baby — Fertile discharge">
+          <img src="../../assets/yellow-baby-stamp.jpg" alt="Yellow Baby" />
+        </button>
+        <button class="stamp-option" data-stamp="white-baby" title="White Baby — Peak-type mucus">
+          <img src="../../assets/white-baby-stamp.jpeg" alt="White Baby" />
+        </button>
+        <button class="stamp-option eraser" data-stamp="none" title="Erase stamp">✕</button>
+      </div>
+    </div>
+
+    <!-- Chart area -->
+    <div class="chart-area" id="chart-area">
+      <div class="chart-inner" id="chart-inner">
+        <!-- Rendered by editor.js -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="editor-footer">
+      <button class="btn btn-secondary" id="add-row-btn" disabled title="Coming soon">+ Add Cycle Row</button>
+      <span class="chart-legend">P = Peak &nbsp;•&nbsp; 1, 2, 3 = Fertile days following Peak &nbsp;•&nbsp; I = Intercourse</span>
+    </div>
+
+  </div>
+  <script src="editor.js"></script>
 </body>
 </html>
