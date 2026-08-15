@@ -26,13 +26,14 @@ body {
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+  /* Entire window is draggable; interactive zones opt out below */
+  -webkit-app-region: drag;
 }
 
-/* ── Title bar drag region ── */
-.titlebar {
-  height: 12px;
-  background: transparent;
-  -webkit-app-region: drag;
+/* ── Everything interactive opts out of drag ── */
+button, input, textarea, select, a,
+.chart-list, .chart-card, .modal, .modal-overlay {
+  -webkit-app-region: no-drag;
 }
 
 /* ── Buttons ── */
@@ -48,7 +49,6 @@ body {
   font-weight: 600;
   font-family: var(--font);
   transition: opacity 0.15s, transform 0.1s;
-  -webkit-app-region: no-drag;
   white-space: nowrap;
 }
 
@@ -70,15 +70,12 @@ body {
 }
 
 .home-header {
-  padding: 14px 80px 14px 32px; /* right padding leaves room for traffic lights if needed */
+  padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-light);
-  -webkit-app-region: drag;
 }
-
-.home-header * { -webkit-app-region: no-drag; }
 
 .home-header h1 {
   font-size: 20px;
