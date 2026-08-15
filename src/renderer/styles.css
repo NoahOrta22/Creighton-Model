@@ -479,6 +479,12 @@ button, input, textarea, select, a,
   position: relative;
   overflow: hidden;
   background: #fff;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.stamp-cell:hover {
+  background: #f0ebe4;
 }
 
 .stamp-cell:last-child { border-right: none; }
@@ -488,6 +494,7 @@ button, input, textarea, select, a,
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none; /* clicks fall through to the cell */
 }
 
 /* ── Date cells ── */

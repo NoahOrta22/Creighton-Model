@@ -15,20 +15,50 @@ const chartId  = params.get('id');
 let chartData  = null;
 
 // ── DOM refs ─────────────────────────────────────────────────
-const chartInner      = document.getElementById('chart-inner');
+const chartInner       = document.getElementById('chart-inner');
 const chartNameDisplay = document.getElementById('chart-name-display');
-const backBtn         = document.getElementById('back-btn');
-const stampOptions    = document.querySelectorAll('.stamp-option');
+const backBtn          = document.getElementById('back-btn');
+const stampOptions     = document.querySelectorAll('.stamp-option');
 
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', () => { location.href = 'home.html'; });
 
-// ── Stamp toolbar selection (visual only for now) ─────────────
+// ── Stamp toolbar selection ───────────────────────────────────
 stampOptions.forEach(btn => {
   btn.addEventListener('click', () => {
     stampOptions.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   });
+});
+
+function getActiveStamp() {
+  const active = document.querySelector('.stamp-option.active');
+  return active ? active.dataset.stamp : 'none';
+}
+
+// ── Stamp application ─────────────────────────────────────────
+function updateStampCell(cell, stamp) {
+  cell.innerHTML = '';
+  if (stamp && stamp !== 'none' && STAMP_IMAGES[stamp]) {
+    const img = document.createElement('img');
+    img.src = STAMP_IMAGES[stamp];
+    img.alt = stamp;
+    img.draggable = false;
+    cell.appendChild(img);
+  }
+}
+
+// Event delegation — handles existing and future rows added in Stage 6
+chartInner.addEventListener('click', (e) => {
+  const cell = e.target.closest('.stamp-cell');
+  if (!cell) return;
+
+  const rowIndex = parseInt(cell.dataset.rowIndex, 10);
+  const dayIndex = parseInt(cell.dataset.dayIndex, 10);
+  const stamp    = getActiveStamp();
+
+  chartData.rows[rowIndex].days[dayIndex].stamp = stamp === 'none' ? null : stamp;
+  updateStampCell(cell, stamp);
 });
 
 // ── Build a blank cycle row data object ──────────────────────
