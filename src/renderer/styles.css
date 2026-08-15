@@ -566,6 +566,13 @@ button, input, textarea, select, a,
   cursor: text;
   -webkit-app-region: no-drag;
   user-select: text;
+  transition: background 0.1s;
+}
+
+.date-cell input:focus,
+.desc-cell input:focus {
+  background: #fffbe6;
+  outline: none;
 }
 
 .date-cell {

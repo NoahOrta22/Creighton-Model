@@ -58,6 +58,36 @@ function updateStampCell(cell, stamp, marker) {
   }
 }
 
+// ── Text field wiring (event delegation) ─────────────────────
+chartInner.addEventListener('input', (e) => {
+  const input = e.target.closest('input[data-field]');
+  if (!input || !chartData) return;
+
+  const rowIndex = parseInt(input.dataset.rowIndex, 10);
+  const dayIndex = parseInt(input.dataset.dayIndex, 10);
+  chartData.rows[rowIndex].days[dayIndex][input.dataset.field] = input.value;
+});
+
+// Tab / Shift-Tab moves between cells in the same sub-row
+chartInner.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const input = e.target.closest('input[data-field]');
+  if (!input) return;
+
+  e.preventDefault();
+  const rowIndex = parseInt(input.dataset.rowIndex, 10);
+  const dayIndex = parseInt(input.dataset.dayIndex, 10);
+  const field    = input.dataset.field;
+
+  const nextDay = e.shiftKey ? dayIndex - 1 : dayIndex + 1;
+  if (nextDay < 0 || nextDay >= DAYS_PER_ROW) return;
+
+  const next = chartInner.querySelector(
+    `input[data-row-index="${rowIndex}"][data-day-index="${nextDay}"][data-field="${field}"]`
+  );
+  if (next) next.focus();
+});
+
 // ── Click handler (event delegation) ─────────────────────────
 chartInner.addEventListener('click', (e) => {
   const cell = e.target.closest('.stamp-cell');
