@@ -32,7 +32,9 @@ body {
 
 /* ── Everything interactive opts out of drag ── */
 button, input, textarea, select, a,
-.chart-list, .chart-card, .modal, .modal-overlay {
+.chart-list, .chart-card, .modal, .modal-overlay,
+.chart-area, .chart-inner, .stamp-cell,
+.date-cell, .desc-cell {
   -webkit-app-region: no-drag;
 }
 
