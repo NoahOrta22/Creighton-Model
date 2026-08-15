@@ -14,51 +14,73 @@ const params   = new URLSearchParams(location.search);
 const chartId  = params.get('id');
 let chartData  = null;
 
+const MARKERS = new Set(['P', '1', '2', '3']);
+
 // ── DOM refs ─────────────────────────────────────────────────
 const chartInner       = document.getElementById('chart-inner');
 const chartNameDisplay = document.getElementById('chart-name-display');
 const backBtn          = document.getElementById('back-btn');
-const stampOptions     = document.querySelectorAll('.stamp-option');
+const toolOptions      = document.querySelectorAll('.stamp-option');
 
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', () => { location.href = 'home.html'; });
 
-// ── Stamp toolbar selection ───────────────────────────────────
-stampOptions.forEach(btn => {
+// ── Toolbar tool selection ────────────────────────────────────
+toolOptions.forEach(btn => {
   btn.addEventListener('click', () => {
-    stampOptions.forEach(b => b.classList.remove('active'));
+    toolOptions.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   });
 });
 
-function getActiveStamp() {
+function getActiveTool() {
   const active = document.querySelector('.stamp-option.active');
-  return active ? active.dataset.stamp : 'none';
+  return active ? active.dataset.tool : 'none';
 }
 
-// ── Stamp application ─────────────────────────────────────────
-function updateStampCell(cell, stamp) {
+// ── Cell render ───────────────────────────────────────────────
+function updateStampCell(cell, stamp, marker) {
   cell.innerHTML = '';
-  if (stamp && stamp !== 'none' && STAMP_IMAGES[stamp]) {
+
+  if (stamp && STAMP_IMAGES[stamp]) {
     const img = document.createElement('img');
     img.src = STAMP_IMAGES[stamp];
     img.alt = stamp;
     img.draggable = false;
     cell.appendChild(img);
   }
+
+  if (marker) {
+    const lbl = document.createElement('span');
+    lbl.className = 'marker-label';
+    lbl.textContent = marker;
+    cell.appendChild(lbl);
+  }
 }
 
-// Event delegation — handles existing and future rows added in Stage 6
+// ── Click handler (event delegation) ─────────────────────────
 chartInner.addEventListener('click', (e) => {
   const cell = e.target.closest('.stamp-cell');
   if (!cell) return;
 
   const rowIndex = parseInt(cell.dataset.rowIndex, 10);
   const dayIndex = parseInt(cell.dataset.dayIndex, 10);
-  const stamp    = getActiveStamp();
+  const tool     = getActiveTool();
+  const day      = chartData.rows[rowIndex].days[dayIndex];
 
-  chartData.rows[rowIndex].days[dayIndex].stamp = stamp === 'none' ? null : stamp;
-  updateStampCell(cell, stamp);
+  if (tool === 'none') {
+    // Eraser: clear stamp and marker
+    day.stamp  = null;
+    day.marker = null;
+  } else if (MARKERS.has(tool)) {
+    // Marker tool: toggle — clicking same marker twice removes it
+    day.marker = day.marker === tool ? null : tool;
+  } else {
+    // Stamp tool: replace stamp, leave marker alone
+    day.stamp = tool;
+  }
+
+  updateStampCell(cell, day.stamp, day.marker);
 });
 
 // ── Build a blank cycle row data object ──────────────────────
@@ -67,6 +89,7 @@ function makeBlankRow() {
     id: `row_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     days: Array.from({ length: DAYS_PER_ROW }, () => ({
       stamp: null,
+      marker: null,
       date: '',
       description: '',
     })),
@@ -113,13 +136,7 @@ function renderCycleRow(rowData, rowIndex) {
     cell.dataset.rowIndex = rowIndex;
     cell.dataset.dayIndex = d;
 
-    if (rowData.days[d].stamp && STAMP_IMAGES[rowData.days[d].stamp]) {
-      const img = document.createElement('img');
-      img.src = STAMP_IMAGES[rowData.days[d].stamp];
-      img.alt = rowData.days[d].stamp;
-      cell.appendChild(img);
-    }
-
+    updateStampCell(cell, rowData.days[d].stamp, rowData.days[d].marker ?? null);
     stampRow.appendChild(cell);
   }
 

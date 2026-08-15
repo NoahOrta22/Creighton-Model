@@ -384,6 +384,29 @@ button, input, textarea, select, a,
   font-weight: 700;
 }
 
+.stamp-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.stamp-option.marker-option {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: Georgia, serif;
+  color: var(--brown);
+  background: #fff;
+  border: 1.5px solid var(--border);
+}
+
+.stamp-option.marker-option.active {
+  background: var(--brown);
+  color: #fff;
+  border-color: var(--brown);
+}
+
 /* ── Chart scroll container ── */
 .chart-area {
   flex: 1;
@@ -496,7 +519,23 @@ button, input, textarea, select, a,
   height: 100%;
   object-fit: cover;
   display: block;
-  pointer-events: none; /* clicks fall through to the cell */
+  pointer-events: none;
+}
+
+.marker-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 900;
+  font-family: Georgia, serif;
+  color: #111;
+  text-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+  pointer-events: none;
+  z-index: 5;
+  line-height: 1;
 }
 
 /* ── Date cells ── */

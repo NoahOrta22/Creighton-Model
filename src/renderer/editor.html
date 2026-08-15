@@ -19,26 +19,36 @@
       </div>
     </div>
 
-    <!-- Stamp picker -->
+    <!-- Stamp + marker picker -->
     <div class="stamp-toolbar">
       <span class="stamp-toolbar-label">Stamp</span>
       <div class="stamp-picker">
-        <button class="stamp-option active" data-stamp="red" title="Red — Menstruation/bleeding">
+        <button class="stamp-option active" data-tool="red" title="Red — Menstruation/bleeding">
           <img src="../../assets/red-stamp.jpeg" alt="Red" />
         </button>
-        <button class="stamp-option" data-stamp="yellow" title="Yellow — Same discharge pattern">
+        <button class="stamp-option" data-tool="yellow" title="Yellow — Same discharge pattern">
           <img src="../../assets/yellow-stamp.jpeg" alt="Yellow" />
         </button>
-        <button class="stamp-option" data-stamp="green" title="Green — Dry / infertile">
+        <button class="stamp-option" data-tool="green" title="Green — Dry / infertile">
           <img src="../../assets/green-stamp.png" alt="Green" />
         </button>
-        <button class="stamp-option" data-stamp="yellow-baby" title="Yellow Baby — Fertile discharge">
+        <button class="stamp-option" data-tool="yellow-baby" title="Yellow Baby — Fertile discharge">
           <img src="../../assets/yellow-baby-stamp.jpg" alt="Yellow Baby" />
         </button>
-        <button class="stamp-option" data-stamp="white-baby" title="White Baby — Peak-type mucus">
+        <button class="stamp-option" data-tool="white-baby" title="White Baby — Peak-type mucus">
           <img src="../../assets/white-baby-stamp.jpeg" alt="White Baby" />
         </button>
-        <button class="stamp-option eraser" data-stamp="none" title="Erase stamp">✕</button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-option marker-option" data-tool="P" title="P — Peak day (tap to toggle)">P</button>
+        <button class="stamp-option marker-option" data-tool="1" title="1 — 1st fertile day after Peak">1</button>
+        <button class="stamp-option marker-option" data-tool="2" title="2 — 2nd fertile day after Peak">2</button>
+        <button class="stamp-option marker-option" data-tool="3" title="3 — 3rd fertile day after Peak">3</button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-option eraser" data-tool="none" title="Erase stamp and marker">✕</button>
       </div>
     </div>
 
