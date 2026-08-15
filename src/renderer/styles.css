@@ -1,0 +1,172 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cream: #f5f0eb;
+  --brown: #5c3d2e;
+  --red: #c0392b;
+  --yellow: #f1c40f;
+  --green: #27ae60;
+  --border: #c8b89a;
+  --shadow: rgba(0, 0, 0, 0.12);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--brown);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Title bar drag region ── */
+.titlebar {
+  -webkit-app-region: drag;
+  height: 28px;
+  background: transparent;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-app-region: no-drag;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:hover { opacity: 0.88; }
+
+.btn-primary {
+  background: var(--brown);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #e8ddd2;
+  color: var(--brown);
+}
+
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+}
+
+/* ── Home screen ── */
+#home-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.home-header {
+  padding: 20px 32px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.chart-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  align-content: start;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.chart-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+.chart-card-thumb {
+  width: 100%;
+  height: 130px;
+  background: #f0ebe4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.chart-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chart-card-info {
+  padding: 12px 14px;
+}
+
+.chart-card-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-card-date {
+  font-size: 11px;
+  color: #999;
+}
+
+.chart-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+
+.chart-card-actions .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 6px 10px;
+  justify-content: center;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: #aaa;
+}
+
+.empty-state p { font-size: 15px; }

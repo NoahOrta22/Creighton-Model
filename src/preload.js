@@ -1,0 +1,12 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('api', {
+  listCharts: () => ipcRenderer.invoke('list-charts'),
+  loadChart: (id) => ipcRenderer.invoke('load-chart', id),
+  saveChart: (id, data) => ipcRenderer.invoke('save-chart', id, data),
+  deleteChart: (id) => ipcRenderer.invoke('delete-chart', id),
+  showSaveDialog: (defaultName) => ipcRenderer.invoke('show-save-dialog', defaultName),
+  writeExportFile: (filePath, base64Data, mimeType) =>
+    ipcRenderer.invoke('write-export-file', filePath, base64Data, mimeType),
+  getAssetsPath: () => ipcRenderer.invoke('get-assets-path'),
+});
