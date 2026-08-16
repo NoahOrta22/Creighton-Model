@@ -840,12 +840,12 @@ button, input, textarea, select, a,
   color: #c01010;
 }
 
-/* ── Floating text boxes — transparent, red text only ── */
+/* ── Floating text boxes — cream background, red text ── */
 .chart-text-box {
   position: absolute;
   min-width: 60px;
   min-height: 24px;
-  background: transparent;
+  background: rgba(255, 253, 240, 0.3);
   border: 1.5px dashed transparent;
   border-radius: 4px;
   display: flex;
