@@ -341,4 +341,16 @@ async function init() {
   initZoom();
 }
 
+// ── Add Cycle Row ─────────────────────────────────────────────
+document.getElementById('add-row-btn').addEventListener('click', () => {
+  const newRow = makeBlankRow();
+  chartData.rows.push(newRow);
+
+  const rowIndex = chartData.rows.length - 1;
+  chartInner.appendChild(renderCycleRow(newRow, rowIndex));
+
+  // Scroll the new row into view
+  chartInner.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 init();
