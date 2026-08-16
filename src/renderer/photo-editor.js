@@ -1,6 +1,7 @@
 // ── Constants ────────────────────────────────────────────────
-const STAMP_W = 60;
-const STAMP_H = 60;
+// Target on-screen size in CSS px regardless of photo zoom level.
+// Logical size = VISUAL_STAMP / zoom so stamps stay visually constant as zoom changes.
+const VISUAL_STAMP = 60;
 
 const STAMP_IMAGES = {
   'red':         '../../assets/red-stamp.jpeg',
@@ -141,6 +142,12 @@ function applyZoom() {
   zoomLevelEl.textContent = `${Math.round(zoom * 100)}%`;
   zoomOutBtn.disabled = zoom <= baseZoom;
   zoomInBtn.disabled  = zoom >= ZOOM_MAX;
+  // Keep stamps at a constant visual size regardless of zoom level.
+  const sz = VISUAL_STAMP / zoom;
+  photoCanvas.querySelectorAll('.photo-stamp-item').forEach(el => {
+    el.style.width  = sz + 'px';
+    el.style.height = sz + 'px';
+  });
 }
 
 function setZoom(next) {
@@ -273,8 +280,9 @@ function createStampItemEl(item) {
   el.dataset.itemId = item.id;
   el.style.left   = item.x + 'px';
   el.style.top    = item.y + 'px';
-  el.style.width  = STAMP_W + 'px';
-  el.style.height = STAMP_H + 'px';
+  const sz = VISUAL_STAMP / zoom;
+  el.style.width  = sz + 'px';
+  el.style.height = sz + 'px';
 
   const content = document.createElement('div');
   content.className = 'photo-item-content';
@@ -453,8 +461,9 @@ photoCanvas.addEventListener('click', (e) => {
   if (MARKERS.has(tool)) return; // markers go on existing stamps
 
   const rect = chartPhoto.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / zoom - STAMP_W / 2;
-  const y = (e.clientY - rect.top)  / zoom - STAMP_H / 2;
+  const half = VISUAL_STAMP / zoom / 2;
+  const x = (e.clientX - rect.left) / zoom - half;
+  const y = (e.clientY - rect.top)  / zoom - half;
 
   pushUndo();
 
