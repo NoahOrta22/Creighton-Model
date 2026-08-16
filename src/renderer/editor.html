@@ -12,7 +12,7 @@
     <!-- Top toolbar -->
     <div class="editor-toolbar">
       <button class="btn btn-ghost" id="back-btn">← Charts</button>
-      <span class="chart-name-display" id="chart-name-display">Loading…</span>
+      <input type="text" class="chart-name-input" id="chart-name-input" placeholder="Chart name" />
       <div class="zoom-controls">
         <button class="btn btn-ghost zoom-btn" id="zoom-out-btn" title="Zoom out (⌘−)">−</button>
         <span class="zoom-level" id="zoom-level">100%</span>
@@ -20,8 +20,9 @@
         <button class="btn btn-ghost zoom-reset" id="zoom-reset-btn" title="Reset zoom (⌘0)">Reset</button>
       </div>
       <div class="toolbar-right">
+        <button class="btn btn-secondary" id="text-box-btn" title="Add a floating text box to the chart">Text Box</button>
         <button class="btn btn-secondary" id="export-btn" disabled title="Coming soon">Export</button>
-        <button class="btn btn-primary" id="save-btn" disabled title="Coming soon">Save</button>
+        <button class="btn btn-secondary" id="save-btn">Save</button>
       </div>
     </div>
 
@@ -39,10 +40,13 @@
           <img src="../../assets/green-stamp.png" alt="Green" />
         </button>
         <button class="stamp-option" data-tool="yellow-baby" title="Yellow Baby — Fertile discharge">
-          <img src="../../assets/yellow-baby-stamp.jpg" alt="Yellow Baby" />
+          <img src="../../assets/yellow-baby-stamp.png" alt="Yellow Baby" />
         </button>
         <button class="stamp-option" data-tool="white-baby" title="White Baby — Peak-type mucus">
-          <img src="../../assets/white-baby-stamp.jpeg" alt="White Baby" />
+          <img src="../../assets/white-baby-stamp.png" alt="White Baby" />
+        </button>
+        <button class="stamp-option" data-tool="green-baby" title="Green Baby — Green/fertile">
+          <img src="../../assets/green-baby-stamp.png" alt="Green Baby" />
         </button>
 
         <div class="stamp-divider"></div>
@@ -58,6 +62,7 @@
 
         <div class="stamp-divider"></div>
 
+        <button class="stamp-mode-btn" id="correction-toggle" title="Correction mode — stamps tilt right, markers and text appear in red">Correction</button>
         <button class="stamp-option eraser" data-tool="none" title="Erase stamp and marker">✕</button>
       </div>
     </div>

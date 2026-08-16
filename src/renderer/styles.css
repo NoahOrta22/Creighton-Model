@@ -34,7 +34,7 @@ body {
 button, input, textarea, select, a,
 .chart-list, .chart-card, .modal, .modal-overlay,
 .chart-area, .chart-inner, .stamp-cell,
-.date-cell, .desc-cell {
+.date-cell, .desc-cell, .chart-text-box {
   -webkit-app-region: no-drag;
 }
 
@@ -304,14 +304,31 @@ button, input, textarea, select, a,
   flex-shrink: 0;
 }
 
-.editor-toolbar .chart-name-display {
+.chart-name-input {
   flex: 1;
   font-size: 15px;
   font-weight: 600;
+  font-family: var(--font);
   color: var(--brown);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  padding: 3px 8px;
+  outline: none;
+  min-width: 0;
+  -webkit-app-region: no-drag;
+  user-select: text;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.chart-name-input:hover {
+  border-color: var(--border);
+  background: rgba(0,0,0,0.04);
+}
+
+.chart-name-input:focus {
+  border-color: var(--brown);
+  background: #fff;
 }
 
 .editor-toolbar .toolbar-right {
@@ -460,6 +477,7 @@ button, input, textarea, select, a,
   display: inline-block; /* shrink-wrap to content */
   min-width: max-content;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  position: relative; /* contains absolutely-positioned text boxes */
 }
 
 /* ── Grid row layout: label col + 35 day cols ── */
@@ -496,6 +514,15 @@ button, input, textarea, select, a,
 
 .day-num-cell:last-child { border-right: none; }
 
+/* ── Bold border every 7 days (columns 7, 14, 21, 28, 35)
+      nth-child counts: 1 label + days 1-35, so day 7 = child 8 → 7n+8 ── */
+.chart-header-row .day-num-cell:nth-child(7n + 8),
+.stamp-sub-row .stamp-cell:nth-child(7n + 8),
+.date-sub-row  .date-cell:nth-child(7n + 8),
+.desc-sub-row  .desc-cell:nth-child(7n + 8) {
+  border-right: 2px solid #777;
+}
+
 /* ── Cycle row separator ── */
 .cycle-row {
   border-bottom: 2px solid #555;
@@ -530,10 +557,14 @@ button, input, textarea, select, a,
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* allows tilted correction stamp to overlap adjacent cells */
   background: #fff;
   cursor: pointer;
   transition: background 0.1s;
+}
+
+.stamp-cell.has-correction {
+  z-index: 5; /* paint above siblings so the tilted overlay shows on top */
 }
 
 .stamp-cell:hover {
@@ -660,4 +691,279 @@ button, input, textarea, select, a,
 .chart-legend {
   font-size: 11px;
   color: #a89888;
+}
+
+/* ── Correction mode toggle button ── */
+.stamp-mode-btn {
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: #f0ebe4;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  color: var(--brown-light);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  -webkit-app-region: no-drag;
+  white-space: nowrap;
+}
+
+.stamp-mode-btn:hover {
+  background: #e8ddd2;
+  border-color: var(--border);
+}
+
+.stamp-mode-btn.active {
+  background: rgba(180, 20, 20, 0.1);
+  border-color: #b01010;
+  color: #b01010;
+}
+
+/* ── Correction stamp overlay (tilted 20° over base, overflows adjacent cells) ── */
+.stamp-cell .correction-img,
+.photo-item-content .correction-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: rotate(20deg) scale(0.9);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── Correction marker (red) ── */
+.marker-label.correction-marker {
+  color: #cc1111;
+  z-index: 6;
+}
+
+/* ── Correction text fields (red) ── */
+.date-cell input.correction-text,
+.desc-cell textarea.correction-text {
+  color: #cc1111;
+}
+
+/* ── Text Box button active state ── */
+#text-box-btn.active {
+  background: var(--brown);
+  color: #fff;
+}
+
+/* ── Cycle row delete button ── */
+.stamp-row-label {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cycle-row-delete {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: transparent;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
+  -webkit-app-region: no-drag;
+  line-height: 1;
+}
+
+.cycle-row:hover .cycle-row-delete {
+  color: #c88;
+}
+
+.cycle-row:hover .cycle-row-delete:hover {
+  background: rgba(180, 0, 0, 0.1);
+  color: #c01010;
+}
+
+/* ── Floating text boxes — transparent, red text only ── */
+.chart-text-box {
+  position: absolute;
+  min-width: 60px;
+  min-height: 24px;
+  background: transparent;
+  border: 1.5px dashed transparent;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+  overflow: hidden;
+  z-index: 50;
+  -webkit-app-region: no-drag;
+  transition: border-color 0.15s;
+}
+
+.chart-text-box:hover,
+.chart-text-box:focus-within {
+  border-color: rgba(200, 30, 30, 0.35);
+}
+
+.text-box-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 4px;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 2;
+  -webkit-app-region: no-drag;
+}
+
+.text-box-handle:active {
+  cursor: grabbing;
+}
+
+.chart-text-box:hover .text-box-handle,
+.chart-text-box:focus-within .text-box-handle {
+  opacity: 1;
+  background: rgba(200, 30, 30, 0.08);
+}
+
+.text-box-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #cc1111;
+  line-height: 1;
+  padding: 0 2px;
+  font-family: var(--font);
+  -webkit-app-region: no-drag;
+}
+
+.text-box-delete:hover {
+  color: #900;
+}
+
+.text-box-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+  padding: 4px 4px;
+  padding-top: 20px; /* reserve space for the invisible drag handle */
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: #cc1111;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-app-region: no-drag;
+  user-select: text;
+}
+
+.text-box-textarea::placeholder {
+  color: rgba(200, 30, 30, 0.35);
+  font-weight: 400;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHOTO EDITOR
+   ═══════════════════════════════════════════════════════════ */
+
+#photo-editor-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--cream);
+}
+
+.photo-area {
+  flex: 1;
+  overflow: auto;
+  background: #ccc;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  -webkit-app-region: no-drag;
+}
+
+.photo-area::-webkit-scrollbar { width: 8px; height: 8px; }
+.photo-area::-webkit-scrollbar-track { background: transparent; }
+.photo-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.photo-area::-webkit-scrollbar-corner { background: transparent; }
+
+.photo-canvas {
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  flex-shrink: 0;
+}
+
+#chart-photo {
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Photo stamp items ── */
+.photo-stamp-item {
+  position: absolute;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  z-index: 10;
+}
+
+.photo-stamp-item.has-correction {
+  z-index: 15;
+}
+
+.photo-item-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.photo-item-content img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.photo-item-delete {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #cc1111;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 20;
+  -webkit-app-region: no-drag;
+  font-family: var(--font);
+}
+
+.photo-stamp-item:hover .photo-item-delete {
+  opacity: 1;
+}
+
+.photo-item-delete:hover {
+  background: #900;
 }
