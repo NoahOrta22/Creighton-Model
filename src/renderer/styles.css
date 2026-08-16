@@ -782,10 +782,17 @@ button, input, textarea, select, a,
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   transform: rotate(20deg);
   pointer-events: none;
   z-index: 3;
+}
+
+.stamp-cell .correction-img {
+  object-fit: cover;
+}
+
+.photo-item-content .correction-img {
+  object-fit: contain;
 }
 
 /* Ensure correction overflow is never clipped by intermediate containers */
