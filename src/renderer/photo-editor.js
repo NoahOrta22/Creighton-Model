@@ -204,9 +204,19 @@ function setStampSize(px) {
   const sel = getSelectedItem();
   if (sel) {
     pushUndo();
+    // Grow/shrink around the stamp's center instead of its top-left corner.
+    const oldSize = sel.size || DEFAULT_STAMP_SIZE;
+    const delta = (clamped - oldSize) / 2;
+    sel.x = Math.max(0, sel.x - delta);
+    sel.y = Math.max(0, sel.y - delta);
     sel.size = clamped;
     const el = photoCanvas.querySelector(`[data-item-id="${sel.id}"]`);
-    if (el) { el.style.width = clamped + 'px'; el.style.height = clamped + 'px'; }
+    if (el) {
+      el.style.width  = clamped + 'px';
+      el.style.height = clamped + 'px';
+      el.style.left   = sel.x + 'px';
+      el.style.top    = sel.y + 'px';
+    }
     setDirty();
   } else {
     newStampSize = clamped;
