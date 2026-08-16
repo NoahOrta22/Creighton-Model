@@ -31,8 +31,13 @@
 
     <!-- Stamp + marker picker -->
     <div class="stamp-toolbar">
-      <span class="stamp-toolbar-label">Stamp</span>
       <div class="stamp-picker">
+        <button class="stamp-mode-btn icon-only" id="pan-toggle" title="Pan mode — drag empty space to scroll, click a stamp to select it (drag to move, Delete to remove)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3 L5 19 L9.5 15 L12.5 21.5 L15.3 20.2 L12.3 13.7 L18 13.7 Z"/></svg>
+        </button>
+
+        <div class="stamp-divider"></div>
+
         <button class="stamp-option active" data-tool="red" title="Red — Menstruation/bleeding">
           <img src="../../assets/red-stamp.jpeg" alt="Red" />
         </button>
@@ -71,10 +76,6 @@
         <div class="stamp-divider"></div>
 
         <button class="stamp-mode-btn" id="text-box-btn" title="Add a floating text note to the chart">Text Box</button>
-
-        <div class="stamp-divider"></div>
-
-        <button class="stamp-mode-btn" id="pan-toggle" title="Pan mode — drag empty space to scroll, click a stamp to select it (drag to move, Delete to remove)">Pan</button>
 
         <div class="stamp-divider"></div>
 
