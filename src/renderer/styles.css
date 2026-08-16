@@ -989,6 +989,13 @@ button, input, textarea, select, a,
   z-index: 15;
 }
 
+.photo-stamp-item.selected {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 3px;
+  z-index: 20;
+}
+
 .photo-item-content {
   position: relative;
   width: 100%;
