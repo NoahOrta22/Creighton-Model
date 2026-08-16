@@ -27,24 +27,49 @@ let naturalHeight = 0;
 let isCorrectionMode = false;
 let isTextBoxMode    = false;
 
-// ── Undo stack ───────────────────────────────────────────────
+// ── Undo / Redo stack ─────────────────────────────────────────
 const undoStack = [];
+const redoStack = [];
 const MAX_UNDO  = 50;
 
-function pushUndo() {
-  undoStack.push(JSON.parse(JSON.stringify({
+function snapshot() {
+  return JSON.parse(JSON.stringify({
     items:     chartData.items,
     textBoxes: chartData.textBoxes,
-  })));
+  }));
+}
+
+function updateHistoryBtns() {
+  if (undoBtnEl) undoBtnEl.disabled = undoStack.length === 0;
+  if (redoBtnEl) redoBtnEl.disabled = redoStack.length === 0;
+}
+
+function pushUndo() {
+  undoStack.push(snapshot());
   if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack.length = 0;
+  updateHistoryBtns();
 }
 
 function applyUndo() {
   if (!undoStack.length || !chartData) return;
+  redoStack.push(snapshot());
   const prev = undoStack.pop();
   chartData.items     = prev.items;
   chartData.textBoxes = prev.textBoxes;
   renderItems();
+  updateHistoryBtns();
+  setDirty();
+}
+
+function applyRedo() {
+  if (!redoStack.length || !chartData) return;
+  undoStack.push(snapshot());
+  const next = redoStack.pop();
+  chartData.items     = next.items;
+  chartData.textBoxes = next.textBoxes;
+  renderItems();
+  updateHistoryBtns();
   setDirty();
 }
 
@@ -63,6 +88,8 @@ const zoomLevelEl     = document.getElementById('zoom-level');
 const correctionToggle = document.getElementById('correction-toggle');
 const textBoxBtn      = document.getElementById('text-box-btn');
 const uploadPhotoBtn  = document.getElementById('upload-photo-btn');
+const undoBtnEl       = document.getElementById('undo-btn');
+const redoBtnEl       = document.getElementById('redo-btn');
 
 // ── Dirty state & save ────────────────────────────────────────
 let isDirty = false;
@@ -89,6 +116,8 @@ async function save() {
 }
 
 saveBtnEl.addEventListener('click', save);
+undoBtnEl.addEventListener('click', applyUndo);
+redoBtnEl.addEventListener('click', applyRedo);
 
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', async () => {
@@ -136,11 +165,12 @@ zoomResetBtn.addEventListener('click', () => setZoom(baseZoom));
 
 window.addEventListener('keydown', (e) => {
   if (!e.metaKey && !e.ctrlKey) return;
-  if (e.key === 's')               { e.preventDefault(); save(); }
-  if (e.key === 'z')               { e.preventDefault(); applyUndo(); }
-  if (e.key === '=' || e.key === '+') { e.preventDefault(); setZoom(zoom + ZOOM_STEP); }
-  if (e.key === '-')               { e.preventDefault(); setZoom(zoom - ZOOM_STEP); }
-  if (e.key === '0')               { e.preventDefault(); setZoom(baseZoom); }
+  if (e.key === 's')                        { e.preventDefault(); save(); }
+  if (e.key === 'z' && !e.shiftKey)         { e.preventDefault(); applyUndo(); }
+  if ((e.key === 'z' || e.key === 'Z') && e.shiftKey) { e.preventDefault(); applyRedo(); }
+  if (e.key === '=' || e.key === '+')       { e.preventDefault(); setZoom(zoom + ZOOM_STEP); }
+  if (e.key === '-')                        { e.preventDefault(); setZoom(zoom - ZOOM_STEP); }
+  if (e.key === '0')                        { e.preventDefault(); setZoom(baseZoom); }
 });
 
 window.addEventListener('resize', () => {
