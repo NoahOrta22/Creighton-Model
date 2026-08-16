@@ -14,7 +14,7 @@ const params   = new URLSearchParams(location.search);
 const chartId  = params.get('id');
 let chartData  = null;
 
-const MARKERS = new Set(['P', '1', '2', '3']);
+const MARKERS = new Set(['P', '1', '2', '3', 'I']);
 
 const ZOOM_STEP    = 0.2;
 const ZOOM_MAX     = 2.6;
