@@ -102,6 +102,18 @@ ipcMain.handle('write-export-file', (_e, filePath, base64Data, mimeType) => {
   return true;
 });
 
+ipcMain.handle('show-unsaved-changes-dialog', async () => {
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'warning',
+    buttons: ['Save', "Don't Save", 'Cancel'],
+    defaultId: 0,
+    cancelId: 2,
+    message: 'You have unsaved changes.',
+    detail: 'Do you want to save your changes before leaving?',
+  });
+  return result.response; // 0 = Save, 1 = Don't Save, 2 = Cancel
+});
+
 ipcMain.handle('select-chart-image', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],

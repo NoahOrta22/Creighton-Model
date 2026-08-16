@@ -118,7 +118,9 @@ saveBtnEl.addEventListener('click', save);
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', async () => {
   if (isDirty) {
-    if (!confirm('You have unsaved changes. Leave without saving?')) return;
+    const response = await window.api.confirmUnsavedChanges(); // 0=Save, 1=Don't Save, 2=Cancel
+    if (response === 2) return;
+    if (response === 0) await save();
   }
   location.href = 'home.html';
 });

@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('api', {
   loadChart: (id) => ipcRenderer.invoke('load-chart', id),
   saveChart: (id, data) => ipcRenderer.invoke('save-chart', id, data),
   deleteChart: (id) => ipcRenderer.invoke('delete-chart', id),
+  confirmUnsavedChanges: () => ipcRenderer.invoke('show-unsaved-changes-dialog'),
   showSaveDialog: (defaultName) => ipcRenderer.invoke('show-save-dialog', defaultName),
   writeExportFile: (filePath, base64Data, mimeType) =>
     ipcRenderer.invoke('write-export-file', filePath, base64Data, mimeType),

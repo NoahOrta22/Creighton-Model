@@ -127,7 +127,11 @@ redoBtnEl.addEventListener('click', applyRedo);
 
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', async () => {
-  if (isDirty && !confirm('You have unsaved changes. Leave without saving?')) return;
+  if (isDirty) {
+    const response = await window.api.confirmUnsavedChanges(); // 0=Save, 1=Don't Save, 2=Cancel
+    if (response === 2) return;
+    if (response === 0) await save();
+  }
   location.href = 'home.html';
 });
 
