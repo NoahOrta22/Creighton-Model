@@ -16,10 +16,11 @@ let chartData  = null;
 
 const MARKERS = new Set(['P', '1', '2', '3']);
 
-const ZOOM_STEP = 0.2;
-const ZOOM_MIN  = 1.0;
-const ZOOM_MAX  = 2.6;
-let zoom = 1.0;
+const ZOOM_STEP    = 0.2;
+const ZOOM_MAX     = 2.6;
+let zoom           = 1.0;
+let baseZoom       = 1.0; // minimum = fit chart width to window; never < 1.0
+let naturalWidth   = 0;   // chart's pixel width at zoom=1, measured after first render
 
 // ── DOM refs ─────────────────────────────────────────────────
 const chartInner       = document.getElementById('chart-inner');
@@ -35,56 +36,80 @@ const zoomLevelEl      = document.getElementById('zoom-level');
 backBtn.addEventListener('click', () => { location.href = 'home.html'; });
 
 // ── Zoom ─────────────────────────────────────────────────────
+const chartArea = document.getElementById('chart-area');
+
+function computeBaseZoom() {
+  if (!naturalWidth) return 1.0;
+  // Available content width = clientWidth minus 16px padding on each side
+  const available = chartArea.clientWidth - 32;
+  return Math.max(1.0, available / naturalWidth);
+}
+
 function applyZoom() {
   chartInner.style.zoom = zoom;
   zoomLevelEl.textContent = `${Math.round(zoom * 100)}%`;
-  zoomOutBtn.disabled = zoom <= ZOOM_MIN;
+  zoomOutBtn.disabled = zoom <= baseZoom;
   zoomInBtn.disabled  = zoom >= ZOOM_MAX;
 }
 
 // Stepped zoom for buttons and keyboard (snaps to nearest 20%)
 function setZoom(next) {
-  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next / ZOOM_STEP) * ZOOM_STEP));
+  zoom = Math.min(ZOOM_MAX, Math.max(baseZoom, Math.round(next / ZOOM_STEP) * ZOOM_STEP));
   applyZoom();
 }
 
 // Continuous zoom for pinch / scroll gestures (no snapping)
 function smoothZoom(delta) {
-  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom + delta));
+  zoom = Math.min(ZOOM_MAX, Math.max(baseZoom, zoom + delta));
+  applyZoom();
+}
+
+// Called after chart is rendered so naturalWidth can be measured
+function initZoom() {
+  naturalWidth = chartInner.offsetWidth;
+  baseZoom = computeBaseZoom();
+  zoom = baseZoom;
   applyZoom();
 }
 
 zoomInBtn.addEventListener('click',    () => setZoom(zoom + ZOOM_STEP));
 zoomOutBtn.addEventListener('click',   () => setZoom(zoom - ZOOM_STEP));
-zoomResetBtn.addEventListener('click', () => setZoom(1.0));
+zoomResetBtn.addEventListener('click', () => setZoom(baseZoom));
 
 window.addEventListener('keydown', (e) => {
   if (!e.metaKey && !e.ctrlKey) return;
   if (e.key === '=' || e.key === '+') { e.preventDefault(); setZoom(zoom + ZOOM_STEP); }
   if (e.key === '-')                  { e.preventDefault(); setZoom(zoom - ZOOM_STEP); }
-  if (e.key === '0')                  { e.preventDefault(); setZoom(1.0); }
+  if (e.key === '0')                  { e.preventDefault(); setZoom(baseZoom); }
 });
 
-// Pinch gesture (trackpad) and Ctrl+scroll (mouse): zoom toward the cursor position
-document.getElementById('chart-area').addEventListener('wheel', (e) => {
-  if (!e.ctrlKey) return; // let regular two-finger scroll pan the chart normally
+// Recompute base zoom when window is resized
+window.addEventListener('resize', () => {
+  if (!naturalWidth) return;
+  const newBase = computeBaseZoom();
+  const wasAtBase = zoom <= baseZoom + 0.001;
+  baseZoom = newBase;
+  // If user was at the fit level, track the resize; otherwise clamp upward
+  zoom = wasAtBase ? newBase : Math.max(newBase, zoom);
+  applyZoom();
+});
+
+// Pinch (trackpad) and Ctrl+scroll (mouse): zoom toward cursor
+chartArea.addEventListener('wheel', (e) => {
+  if (!e.ctrlKey) return;
   e.preventDefault();
 
-  const chartArea = document.getElementById('chart-area');
-  const rect = chartArea.getBoundingClientRect();
+  const rect    = chartArea.getBoundingClientRect();
+  const mouseX  = e.clientX - rect.left;
+  const mouseY  = e.clientY - rect.top;
 
-  // Where the cursor sits inside the chart-area's visible port
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  // The content coordinate (in un-zoomed units) under the cursor
+  // Content coordinates under cursor before zoom change
   const contentX = (chartArea.scrollLeft + mouseX) / zoom;
   const contentY = (chartArea.scrollTop  + mouseY) / zoom;
 
-  // Apply the new zoom
   smoothZoom(-e.deltaY * 0.004);
 
-  // Re-anchor scroll so the same content point stays under the cursor
+  // Reanchor scroll so the same content point stays under the cursor
   chartArea.scrollLeft = contentX * zoom - mouseX;
   chartArea.scrollTop  = contentY * zoom - mouseY;
 }, { passive: false });
@@ -313,6 +338,7 @@ async function init() {
   }
 
   renderChart();
+  initZoom();
 }
 
 init();
