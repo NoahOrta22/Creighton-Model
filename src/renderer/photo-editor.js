@@ -1,6 +1,6 @@
 // ── Constants ────────────────────────────────────────────────
-const STAMP_W = 30; // matches grid chart column width
-const STAMP_H = 54; // matches grid chart stamp cell height
+const STAMP_W = 60;
+const STAMP_H = 60;
 
 const STAMP_IMAGES = {
   'red':         '../../assets/red-stamp.jpeg',

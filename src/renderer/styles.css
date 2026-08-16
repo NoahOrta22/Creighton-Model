@@ -305,7 +305,7 @@ button, input, textarea, select, a,
 }
 
 .chart-name-input {
-  flex: 1;
+  flex: 0 1 220px;
   font-size: 15px;
   font-weight: 600;
   font-family: var(--font);
