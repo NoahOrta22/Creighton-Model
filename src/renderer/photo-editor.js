@@ -194,7 +194,8 @@ function getSelectedItem() {
 function updateStampSizeDisplay() {
   const sel  = getSelectedItem();
   const size = sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize;
-  stampSizeDisplay.textContent = size;
+  // Don't stomp on what the user is mid-typing.
+  if (document.activeElement !== stampSizeDisplay) stampSizeDisplay.value = size;
   stampSizeDownBtn.disabled = size <= 20;
   stampSizeUpBtn.disabled   = size >= 200;
 }
@@ -231,6 +232,34 @@ stampSizeDownBtn.addEventListener('click', () => {
 stampSizeUpBtn.addEventListener('click', () => {
   const sel = getSelectedItem();
   setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) + 5);
+});
+
+stampSizeDisplay.addEventListener('focus', () => stampSizeDisplay.select());
+
+// Escape cancels the edit — set on keydown, consumed by the blur handler,
+// since updateStampSizeDisplay() (which restores the true value) refuses to
+// touch the input's value while it's still focused.
+let cancelSizeEdit = false;
+
+stampSizeDisplay.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter')       { e.preventDefault(); stampSizeDisplay.blur(); }
+  else if (e.key === 'Escape') { e.preventDefault(); cancelSizeEdit = true; stampSizeDisplay.blur(); }
+  // Route arrow-key nudging through the same step logic as the +/- buttons,
+  // instead of the native number-input spinner (which would desync from it).
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); stampSizeUpBtn.click(); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); stampSizeDownBtn.click(); }
+});
+
+// Focused number inputs respond to mouse-wheel scrolling in Chromium; disable
+// that so scrolling the toolbar area can't silently resize a selected stamp.
+stampSizeDisplay.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+
+stampSizeDisplay.addEventListener('blur', () => {
+  if (cancelSizeEdit) { cancelSizeEdit = false; updateStampSizeDisplay(); return; }
+  const parsed = parseInt(stampSizeDisplay.value, 10);
+  if (Number.isNaN(parsed)) { updateStampSizeDisplay(); return; }
+  setStampSize(parsed);
 });
 
 window.addEventListener('keydown', (e) => {

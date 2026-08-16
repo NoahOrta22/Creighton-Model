@@ -776,9 +776,23 @@ button, input, textarea, select, a,
   font-size: 12px;
   font-family: var(--font);
   color: var(--brown);
-  min-width: 26px;
+  width: 30px;
   text-align: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 0;
+  -webkit-app-region: no-drag;
 }
+
+.stamp-size-display::-webkit-outer-spin-button,
+.stamp-size-display::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stamp-size-display:hover   { border-color: var(--border); }
+.stamp-size-display:focus   { outline: none; border-color: var(--brown); background: var(--bg-light); }
 
 /* ── Correction stamp overlay — 20° tilt, extends into adjacent cells ── */
 /* Image is 140% of parent size, centered via negative offsets, then rotated.
