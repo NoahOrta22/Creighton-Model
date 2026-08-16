@@ -434,6 +434,26 @@ photoCanvas.addEventListener('mousedown', (e) => {
   };
   document.addEventListener('mousemove', onMove);
   document.addEventListener('mouseup', onUp);
+  photoCanvas.style.cursor = 'grabbing';
+
+  const onUpCursor = () => {
+    photoCanvas.style.cursor = '';
+    document.removeEventListener('mouseup', onUpCursor);
+  };
+  document.addEventListener('mouseup', onUpCursor);
+});
+
+// Show hand cursor when hovering over a stamp
+photoCanvas.addEventListener('mousemove', (e) => {
+  if (activeDrag) return;
+  const rect = photoCanvas.getBoundingClientRect();
+  const logX = (e.clientX - rect.left) / zoom;
+  const logY = (e.clientY - rect.top)  / zoom;
+  photoCanvas.style.cursor = stampAt(logX, logY) ? 'grab' : '';
+});
+
+photoCanvas.addEventListener('mouseleave', () => {
+  if (!activeDrag) photoCanvas.style.cursor = '';
 });
 
 photoCanvas.addEventListener('click', (e) => {
