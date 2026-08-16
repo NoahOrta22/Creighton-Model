@@ -483,9 +483,6 @@ button, input, textarea, select, a,
 .header-corner {
   border-right: 2px solid #333;
   background: #f0ebe4;
-  position: sticky;
-  left: 0;
-  z-index: 25;
 }
 
 .day-num-cell {
@@ -508,9 +505,6 @@ button, input, textarea, select, a,
 
 /* ── Row label cells (left column) ── */
 .row-label-cell {
-  position: sticky;
-  left: 0;
-  z-index: 10;
   background: #f0ebe4;
   border-right: 2px solid #333;
   display: flex;

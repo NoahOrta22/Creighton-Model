@@ -17,7 +17,7 @@ let chartData  = null;
 const MARKERS = new Set(['P', '1', '2', '3']);
 
 const ZOOM_STEP = 0.2;
-const ZOOM_MIN  = 0.4;
+const ZOOM_MIN  = 1.0;
 const ZOOM_MAX  = 2.6;
 let zoom = 1.0;
 
@@ -65,11 +65,28 @@ window.addEventListener('keydown', (e) => {
   if (e.key === '0')                  { e.preventDefault(); setZoom(1.0); }
 });
 
-// Pinch gesture (trackpad) and Ctrl+scroll (mouse) both arrive as wheel+ctrlKey on macOS
+// Pinch gesture (trackpad) and Ctrl+scroll (mouse): zoom toward the cursor position
 document.getElementById('chart-area').addEventListener('wheel', (e) => {
-  if (!e.ctrlKey) return;       // let regular two-finger scroll pan the chart normally
+  if (!e.ctrlKey) return; // let regular two-finger scroll pan the chart normally
   e.preventDefault();
-  smoothZoom(-e.deltaY * 0.004); // negative: pinch-in (positive deltaY) → zoom out
+
+  const chartArea = document.getElementById('chart-area');
+  const rect = chartArea.getBoundingClientRect();
+
+  // Where the cursor sits inside the chart-area's visible port
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  // The content coordinate (in un-zoomed units) under the cursor
+  const contentX = (chartArea.scrollLeft + mouseX) / zoom;
+  const contentY = (chartArea.scrollTop  + mouseY) / zoom;
+
+  // Apply the new zoom
+  smoothZoom(-e.deltaY * 0.004);
+
+  // Re-anchor scroll so the same content point stays under the cursor
+  chartArea.scrollLeft = contentX * zoom - mouseX;
+  chartArea.scrollTop  = contentY * zoom - mouseY;
 }, { passive: false });
 
 // ── Toolbar tool selection ────────────────────────────────────
