@@ -29,6 +29,7 @@ let naturalHeight = 0;
 
 let isCorrectionMode = false;
 let isTextBoxMode    = false;
+let isPanMode         = false;
 
 // ── Undo / Redo stack ─────────────────────────────────────────
 const undoStack = [];
@@ -90,6 +91,7 @@ const zoomResetBtn    = document.getElementById('zoom-reset-btn');
 const zoomLevelEl     = document.getElementById('zoom-level');
 const correctionToggle = document.getElementById('correction-toggle');
 const textBoxBtn      = document.getElementById('text-box-btn');
+const panBtn          = document.getElementById('pan-toggle');
 const uploadPhotoBtn  = document.getElementById('upload-photo-btn');
 const undoBtnEl       = document.getElementById('undo-btn');
 const redoBtnEl       = document.getElementById('redo-btn');
@@ -179,14 +181,10 @@ function setStampSize(px) {
   stampSizeDisplay.textContent = visualStamp;
   stampSizeDownBtn.disabled = visualStamp <= 20;
   stampSizeUpBtn.disabled   = visualStamp >= 200;
-  photoCanvas.querySelectorAll('.photo-stamp-item').forEach(el => {
-    el.style.width  = visualStamp + 'px';
-    el.style.height = visualStamp + 'px';
-  });
 }
 
-stampSizeDownBtn.addEventListener('click', () => setStampSize(visualStamp - 10));
-stampSizeUpBtn.addEventListener('click',   () => setStampSize(visualStamp + 10));
+stampSizeDownBtn.addEventListener('click', () => setStampSize(visualStamp - 5));
+stampSizeUpBtn.addEventListener('click',   () => setStampSize(visualStamp + 5));
 
 window.addEventListener('keydown', (e) => {
   if (!e.metaKey && !e.ctrlKey) return;
@@ -239,10 +237,45 @@ correctionToggle.addEventListener('click', () => {
   correctionToggle.classList.toggle('active', isCorrectionMode);
 });
 
+function updateModeCursor() {
+  photoArea.style.cursor = isPanMode ? 'grab' : (isTextBoxMode ? 'crosshair' : '');
+}
+
 textBoxBtn.addEventListener('click', () => {
   isTextBoxMode = !isTextBoxMode;
+  if (isTextBoxMode) { isPanMode = false; panBtn.classList.remove('active'); }
   textBoxBtn.classList.toggle('active', isTextBoxMode);
-  photoArea.style.cursor = isTextBoxMode ? 'crosshair' : '';
+  updateModeCursor();
+});
+
+// ── Pan mode ─────────────────────────────────────────────────
+panBtn.addEventListener('click', () => {
+  isPanMode = !isPanMode;
+  if (isPanMode) { isTextBoxMode = false; textBoxBtn.classList.remove('active'); }
+  panBtn.classList.toggle('active', isPanMode);
+  updateModeCursor();
+});
+
+photoArea.addEventListener('mousedown', (e) => {
+  if (!isPanMode || e.button !== 0) return;
+  e.preventDefault();
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const startScrollLeft = photoArea.scrollLeft;
+  const startScrollTop  = photoArea.scrollTop;
+  photoArea.style.cursor = 'grabbing';
+
+  const onMove = (ev) => {
+    photoArea.scrollLeft = startScrollLeft - (ev.clientX - startX);
+    photoArea.scrollTop  = startScrollTop  - (ev.clientY - startY);
+  };
+  const onUp = () => {
+    photoArea.style.cursor = 'grab';
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
 });
 
 // ── Upload / replace photo ────────────────────────────────────
@@ -411,7 +444,7 @@ function stampAt(logX, logY) {
 let activeDrag = null; // { item, el, startX, startY, startItemX, startItemY, moved }
 
 photoCanvas.addEventListener('mousedown', (e) => {
-  if (e.button !== 0 || isTextBoxMode) return;
+  if (e.button !== 0 || isTextBoxMode || isPanMode) return;
 
   // Use photoCanvas as origin — stamps are positioned relative to it.
   const rect = photoCanvas.getBoundingClientRect();
@@ -454,7 +487,7 @@ photoCanvas.addEventListener('mousedown', (e) => {
 
 // Show hand cursor when hovering over a stamp
 photoCanvas.addEventListener('mousemove', (e) => {
-  if (activeDrag) return;
+  if (activeDrag || isPanMode) return;
   const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
@@ -466,7 +499,7 @@ photoCanvas.addEventListener('mouseleave', () => {
 });
 
 photoCanvas.addEventListener('click', (e) => {
-  if (isTextBoxMode) return;
+  if (isTextBoxMode || isPanMode) return;
 
   const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
