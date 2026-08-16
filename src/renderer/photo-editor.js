@@ -378,9 +378,14 @@ function createTextBoxEl(tb) {
 
   makeTbDraggable(div, handle, tb);
 
+  // ResizeObserver fires once immediately on observe() with the current
+  // size — skip that initial report so loading a chart with existing text
+  // boxes doesn't mark it dirty before the user has touched anything.
+  let isInitialResize = true;
   const ro = new ResizeObserver(() => {
     tb.width  = Math.round(div.offsetWidth);
     tb.height = Math.round(div.offsetHeight);
+    if (isInitialResize) { isInitialResize = false; return; }
     setDirty();
   });
   ro.observe(div);
