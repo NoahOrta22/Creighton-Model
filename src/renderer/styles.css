@@ -736,6 +736,42 @@ button, input, textarea, select, a,
   color: #b01010;
 }
 
+/* ── Stamp size control (photo editor only) ── */
+.stamp-size-control {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  -webkit-app-region: no-drag;
+}
+
+.stamp-size-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-light);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brown);
+  -webkit-app-region: no-drag;
+}
+
+.stamp-size-btn:hover { background: var(--border); }
+.stamp-size-btn:disabled { opacity: 0.35; cursor: default; }
+
+.stamp-size-display {
+  font-size: 12px;
+  font-family: var(--font);
+  color: var(--brown);
+  min-width: 26px;
+  text-align: center;
+}
+
 /* ── Correction stamp overlay — 20° tilt, extends into adjacent cells ── */
 /* Image is 140% of parent size, centered via negative offsets, then rotated.
    This ensures the full stamp is visible as it overlaps neighboring cells. */
