@@ -16,14 +16,47 @@ let chartData  = null;
 
 const MARKERS = new Set(['P', '1', '2', '3']);
 
+const ZOOM_STEP = 0.1;
+const ZOOM_MIN  = 0.4;
+const ZOOM_MAX  = 2.5;
+let zoom = 1.0;
+
 // ── DOM refs ─────────────────────────────────────────────────
 const chartInner       = document.getElementById('chart-inner');
 const chartNameDisplay = document.getElementById('chart-name-display');
 const backBtn          = document.getElementById('back-btn');
 const toolOptions      = document.querySelectorAll('.stamp-option');
+const zoomInBtn        = document.getElementById('zoom-in-btn');
+const zoomOutBtn       = document.getElementById('zoom-out-btn');
+const zoomResetBtn     = document.getElementById('zoom-reset-btn');
+const zoomLevelEl      = document.getElementById('zoom-level');
 
 // ── Navigation ───────────────────────────────────────────────
 backBtn.addEventListener('click', () => { location.href = 'home.html'; });
+
+// ── Zoom ─────────────────────────────────────────────────────
+function applyZoom() {
+  chartInner.style.zoom = zoom;
+  zoomLevelEl.textContent = `${Math.round(zoom * 100)}%`;
+  zoomOutBtn.disabled = zoom <= ZOOM_MIN;
+  zoomInBtn.disabled  = zoom >= ZOOM_MAX;
+}
+
+function setZoom(next) {
+  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next * 10) / 10));
+  applyZoom();
+}
+
+zoomInBtn.addEventListener('click',    () => setZoom(zoom + ZOOM_STEP));
+zoomOutBtn.addEventListener('click',   () => setZoom(zoom - ZOOM_STEP));
+zoomResetBtn.addEventListener('click', () => setZoom(1.0));
+
+window.addEventListener('keydown', (e) => {
+  if (!e.metaKey && !e.ctrlKey) return;
+  if (e.key === '=' || e.key === '+') { e.preventDefault(); setZoom(zoom + ZOOM_STEP); }
+  if (e.key === '-')                  { e.preventDefault(); setZoom(zoom - ZOOM_STEP); }
+  if (e.key === '0')                  { e.preventDefault(); setZoom(1.0); }
+});
 
 // ── Toolbar tool selection ────────────────────────────────────
 toolOptions.forEach(btn => {

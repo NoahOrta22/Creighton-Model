@@ -13,6 +13,12 @@
     <div class="editor-toolbar">
       <button class="btn btn-ghost" id="back-btn">← Charts</button>
       <span class="chart-name-display" id="chart-name-display">Loading…</span>
+      <div class="zoom-controls">
+        <button class="btn btn-ghost zoom-btn" id="zoom-out-btn" title="Zoom out (⌘−)">−</button>
+        <span class="zoom-level" id="zoom-level">100%</span>
+        <button class="btn btn-ghost zoom-btn" id="zoom-in-btn" title="Zoom in (⌘=)">+</button>
+        <button class="btn btn-ghost zoom-reset" id="zoom-reset-btn" title="Reset zoom (⌘0)">Reset</button>
+      </div>
       <div class="toolbar-right">
         <button class="btn btn-secondary" id="export-btn" disabled title="Coming soon">Export</button>
         <button class="btn btn-primary" id="save-btn" disabled title="Coming soon">Save</button>
