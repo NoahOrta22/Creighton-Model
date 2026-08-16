@@ -21,7 +21,8 @@ const ZOOM_STEP  = 0.2;
 const ZOOM_MAX   = 3.0;
 let zoom         = 1.0;
 let baseZoom     = 1.0;
-let naturalWidth = 0;
+let naturalWidth  = 0;
+let naturalHeight = 0;
 
 let isCorrectionMode = false;
 let isTextBoxMode    = false;
@@ -97,9 +98,11 @@ backBtn.addEventListener('click', async () => {
 
 // ── Zoom ─────────────────────────────────────────────────────
 function computeBaseZoom() {
-  if (!naturalWidth) return 1.0;
-  const available = photoArea.clientWidth - 32;
-  return Math.max(1.0, available / naturalWidth);
+  if (!naturalWidth || !naturalHeight) return 1.0;
+  const availableW = photoArea.clientWidth  - 32;
+  const availableH = photoArea.clientHeight - 32;
+  // fit-contain: scale down (or up) to show the whole image in the window
+  return Math.min(availableW / naturalWidth, availableH / naturalHeight);
 }
 
 function applyZoom() {
@@ -120,7 +123,8 @@ function smoothZoom(delta) {
 }
 
 function initZoom() {
-  naturalWidth = photoCanvas.offsetWidth;
+  naturalWidth  = chartPhoto.naturalWidth  || photoCanvas.offsetWidth;
+  naturalHeight = chartPhoto.naturalHeight || photoCanvas.offsetHeight;
   baseZoom = computeBaseZoom();
   zoom = baseZoom;
   applyZoom();
@@ -140,7 +144,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('resize', () => {
-  if (!naturalWidth) return;
+  if (!naturalWidth || !naturalHeight) return;
   const newBase = computeBaseZoom();
   const wasAtBase = zoom <= baseZoom + 0.001;
   baseZoom = newBase;
@@ -242,28 +246,13 @@ function createStampItemEl(item) {
   content.className = 'photo-item-content';
   el.appendChild(content);
 
-  const del = document.createElement('button');
-  del.className = 'photo-item-delete';
-  del.textContent = '×';
-  del.title = 'Remove stamp';
-  el.appendChild(del);
-
   renderItemContent(content, item);
   el.classList.toggle('has-correction', !!(item.correctionStamp || item.correctionMarker));
-
-  // Delete button
-  del.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pushUndo();
-    chartData.items = chartData.items.filter(i => i.id !== item.id);
-    el.remove();
-    setDirty();
-  });
 
   // Drag to reposition
   let dragged = false;
   el.addEventListener('mousedown', (e) => {
-    if (e.button !== 0 || e.target === del) return;
+    if (e.button !== 0) return;
     e.preventDefault();
     dragged = false;
     const startX    = e.clientX;
