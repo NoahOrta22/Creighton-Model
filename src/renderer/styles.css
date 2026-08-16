@@ -937,7 +937,7 @@ button, input, textarea, select, a,
 /* ── Photo stamp items ── */
 .photo-stamp-item {
   position: absolute;
-  cursor: pointer;
+  pointer-events: none; /* interaction handled at canvas level via manual hit testing */
   -webkit-app-region: no-drag;
   z-index: 10;
 }

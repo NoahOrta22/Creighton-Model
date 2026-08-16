@@ -291,83 +291,7 @@ function createStampItemEl(item) {
   renderItemContent(content, item);
   el.classList.toggle('has-correction', !!(item.correctionStamp || item.correctionMarker));
 
-  // Drag to reposition
-  let dragged = false;
-  el.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    dragged = false;
-    const startX    = e.clientX;
-    const startY    = e.clientY;
-    const startLeft = item.x;
-    const startTop  = item.y;
-
-    const onMove = (ev) => {
-      const dx = (ev.clientX - startX) / zoom;
-      const dy = (ev.clientY - startY) / zoom;
-      if (!dragged && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) dragged = true;
-      if (dragged) {
-        item.x = Math.max(0, startLeft + dx);
-        item.y = Math.max(0, startTop  + dy);
-        el.style.left = item.x + 'px';
-        el.style.top  = item.y + 'px';
-        setDirty();
-      }
-    };
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  });
-
-  // Click to apply tool (marker, eraser, or stamp replacement)
-  el.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (dragged) { dragged = false; return; }
-
-    const tool = getActiveTool();
-
-    if (tool === 'none') {
-      pushUndo();
-      if (isCorrectionMode) {
-        item.correctionStamp  = null;
-        item.correctionMarker = null;
-        if (!item.stamp && !item.marker) {
-          chartData.items = chartData.items.filter(i => i.id !== item.id);
-          el.remove();
-          setDirty();
-          return;
-        }
-      } else {
-        chartData.items = chartData.items.filter(i => i.id !== item.id);
-        el.remove();
-        setDirty();
-        return;
-      }
-    } else if (MARKERS.has(tool)) {
-      pushUndo();
-      if (isCorrectionMode) {
-        item.correctionMarker = item.correctionMarker === tool ? null : tool;
-      } else {
-        item.marker = item.marker === tool ? null : tool;
-      }
-    } else {
-      pushUndo();
-      if (isCorrectionMode) {
-        item.correctionStamp = tool;
-      } else {
-        item.stamp = tool;
-      }
-    }
-
-    renderItemContent(content, item);
-    el.classList.toggle('has-correction', !!(item.correctionStamp || item.correctionMarker));
-    setDirty();
-  });
-
-  return el;
+  return el; // interaction is handled at the canvas level
 }
 
 // ── Text box helpers (same pattern as grid editor) ────────────
@@ -452,31 +376,110 @@ function createTextBoxEl(tb) {
   return div;
 }
 
-// ── Place new stamp on canvas click ──────────────────────────
-photoCanvas.addEventListener('click', (e) => {
-  if (isTextBoxMode) return; // handled separately on photoArea
+// ── Canvas-level stamp interaction ────────────────────────────
+// Hit test in logical coords. Checks stamps back-to-front (topmost first).
+function stampAt(logX, logY) {
+  const sz = VISUAL_STAMP / zoom;
+  return [...chartData.items].reverse().find(item =>
+    logX >= item.x && logX <= item.x + sz &&
+    logY >= item.y && logY <= item.y + sz
+  );
+}
 
-  const tool = getActiveTool();
-  if (tool === 'none') return; // eraser on empty canvas does nothing
-  if (MARKERS.has(tool)) return; // markers go on existing stamps
+// Track active drag so the click handler can tell drag-ends from real clicks.
+let activeDrag = null; // { item, el, startX, startY, startItemX, startItemY, moved }
+
+photoCanvas.addEventListener('mousedown', (e) => {
+  if (e.button !== 0 || isTextBoxMode) return;
 
   const rect = chartPhoto.getBoundingClientRect();
-  const half = VISUAL_STAMP / zoom / 2;
-  const x = (e.clientX - rect.left) / zoom - half;
-  const y = (e.clientY - rect.top)  / zoom - half;
+  const logX = (e.clientX - rect.left) / zoom;
+  const logY = (e.clientY - rect.top)  / zoom;
+  const hit  = stampAt(logX, logY);
+  if (!hit) return;
 
-  pushUndo();
+  e.preventDefault();
+  const el = photoCanvas.querySelector(`[data-item-id="${hit.id}"]`);
+  activeDrag = { item: hit, el, startX: e.clientX, startY: e.clientY,
+                 startItemX: hit.x, startItemY: hit.y, moved: false };
 
+  const onMove = (ev) => {
+    const dx = ev.clientX - activeDrag.startX;
+    const dy = ev.clientY - activeDrag.startY;
+    if (!activeDrag.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) activeDrag.moved = true;
+    if (activeDrag.moved) {
+      activeDrag.item.x = Math.max(0, activeDrag.startItemX + dx / zoom);
+      activeDrag.item.y = Math.max(0, activeDrag.startItemY + dy / zoom);
+      activeDrag.el.style.left = activeDrag.item.x + 'px';
+      activeDrag.el.style.top  = activeDrag.item.y + 'px';
+      setDirty();
+    }
+  };
+  const onUp = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+});
+
+photoCanvas.addEventListener('click', (e) => {
+  if (isTextBoxMode) return;
+
+  const rect = chartPhoto.getBoundingClientRect();
+  const logX = (e.clientX - rect.left) / zoom;
+  const logY = (e.clientY - rect.top)  / zoom;
+  const hit  = stampAt(logX, logY);
+
+  if (hit) {
+    // End of a drag — don't apply tool
+    if (activeDrag && activeDrag.item === hit && activeDrag.moved) { activeDrag = null; return; }
+    activeDrag = null;
+
+    const tool    = getActiveTool();
+    const el      = photoCanvas.querySelector(`[data-item-id="${hit.id}"]`);
+    const content = el.querySelector('.photo-item-content');
+
+    if (tool === 'none') {
+      pushUndo();
+      if (isCorrectionMode) {
+        hit.correctionStamp  = null;
+        hit.correctionMarker = null;
+        if (!hit.stamp && !hit.marker) { chartData.items = chartData.items.filter(i => i.id !== hit.id); el.remove(); setDirty(); return; }
+      } else {
+        chartData.items = chartData.items.filter(i => i.id !== hit.id); el.remove(); setDirty(); return;
+      }
+    } else if (MARKERS.has(tool)) {
+      pushUndo();
+      if (isCorrectionMode) hit.correctionMarker = hit.correctionMarker === tool ? null : tool;
+      else                   hit.marker           = hit.marker           === tool ? null : tool;
+    } else {
+      pushUndo();
+      if (isCorrectionMode) hit.correctionStamp = tool;
+      else                   hit.stamp           = tool;
+    }
+    renderItemContent(content, hit);
+    el.classList.toggle('has-correction', !!(hit.correctionStamp || hit.correctionMarker));
+    setDirty();
+    return;
+  }
+
+  // End of a drag that released on empty canvas — don't place a new stamp
+  if (activeDrag && activeDrag.moved) { activeDrag = null; return; }
+  activeDrag = null;
+
+  const tool = getActiveTool();
+  if (tool === 'none' || MARKERS.has(tool)) return;
+
+  const sz   = VISUAL_STAMP / zoom;
   const item = {
     id: `item_${Date.now()}`,
-    x: Math.max(0, x),
-    y: Math.max(0, y),
-    stamp: isCorrectionMode ? null : tool,
-    marker: null,
-    correctionStamp:  isCorrectionMode ? tool : null,
-    correctionMarker: null,
+    x: Math.max(0, logX - sz / 2),
+    y: Math.max(0, logY - sz / 2),
+    stamp: isCorrectionMode ? null : tool, marker: null,
+    correctionStamp: isCorrectionMode ? tool : null, correctionMarker: null,
   };
-
+  pushUndo();
   chartData.items.push(item);
   photoCanvas.appendChild(createStampItemEl(item));
   setDirty();
@@ -485,7 +488,7 @@ photoCanvas.addEventListener('click', (e) => {
 // ── Place text box on canvas click (text-box mode) ────────────
 photoArea.addEventListener('click', (e) => {
   if (!isTextBoxMode) return;
-  if (e.target.closest('.chart-text-box') || e.target.closest('.photo-stamp-item')) return;
+  if (e.target.closest('.chart-text-box')) return;
 
   const rect = photoCanvas.getBoundingClientRect();
   const x = Math.max(0, (e.clientX - rect.left) / zoom);
