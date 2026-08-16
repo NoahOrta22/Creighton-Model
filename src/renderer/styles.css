@@ -557,9 +557,10 @@ button, input, textarea, select, a,
   border: none;
   outline: none;
   background: transparent;
-  font-size: 10px;
-  font-family: 'Courier New', 'Courier', monospace;
+  font-size: 10.5px;
+  font-family: 'SF Compact Display', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   font-weight: 500;
+  letter-spacing: -0.01em;
   color: #222;
   text-align: center;
   padding: 1px 2px;
