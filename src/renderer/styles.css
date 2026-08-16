@@ -831,11 +831,11 @@ button, input, textarea, select, a,
   line-height: 1;
 }
 
-.cycle-row:hover .cycle-row-delete {
+.cycle-row:has(.row-label-cell:hover) .cycle-row-delete {
   color: #c88;
 }
 
-.cycle-row:hover .cycle-row-delete:hover {
+.cycle-row:has(.row-label-cell:hover) .cycle-row-delete:hover {
   background: rgba(180, 0, 0, 0.1);
   color: #c01010;
 }
