@@ -1,6 +1,6 @@
 // ── Constants ────────────────────────────────────────────────
-// Target on-screen size in CSS px regardless of photo zoom level.
-// Logical size = visualStamp / zoom so stamps stay visually constant as zoom changes.
+// Size of stamps in logical photo pixels. Scales naturally with CSS zoom
+// so stamps stay in the same position and proportion as the photo when zooming.
 let visualStamp = 60;
 
 const STAMP_IMAGES = {
@@ -145,12 +145,6 @@ function applyZoom() {
   zoomLevelEl.textContent = `${Math.round(zoom * 100)}%`;
   zoomOutBtn.disabled = zoom <= baseZoom;
   zoomInBtn.disabled  = zoom >= ZOOM_MAX;
-  // Keep stamps at a constant visual size regardless of zoom level.
-  const sz = visualStamp / zoom;
-  photoCanvas.querySelectorAll('.photo-stamp-item').forEach(el => {
-    el.style.width  = sz + 'px';
-    el.style.height = sz + 'px';
-  });
 }
 
 function setZoom(next) {
@@ -181,7 +175,10 @@ function setStampSize(px) {
   stampSizeDisplay.textContent = visualStamp;
   stampSizeDownBtn.disabled = visualStamp <= 20;
   stampSizeUpBtn.disabled   = visualStamp >= 200;
-  applyZoom(); // triggers the stamp size update in applyZoom()
+  photoCanvas.querySelectorAll('.photo-stamp-item').forEach(el => {
+    el.style.width  = visualStamp + 'px';
+    el.style.height = visualStamp + 'px';
+  });
 }
 
 stampSizeDownBtn.addEventListener('click', () => setStampSize(visualStamp - 10));
@@ -294,7 +291,7 @@ function createStampItemEl(item) {
   el.dataset.itemId = item.id;
   el.style.left   = item.x + 'px';
   el.style.top    = item.y + 'px';
-  const sz = visualStamp / zoom;
+  const sz = visualStamp;
   el.style.width  = sz + 'px';
   el.style.height = sz + 'px';
 
@@ -394,7 +391,7 @@ function createTextBoxEl(tb) {
 // ── Canvas-level stamp interaction ────────────────────────────
 // Hit test in logical coords. Checks stamps back-to-front (topmost first).
 function stampAt(logX, logY) {
-  const sz = visualStamp / zoom;
+  const sz = visualStamp;
   return [...chartData.items].reverse().find(item =>
     logX >= item.x && logX <= item.x + sz &&
     logY >= item.y && logY <= item.y + sz
@@ -487,7 +484,7 @@ photoCanvas.addEventListener('click', (e) => {
   const tool = getActiveTool();
   if (tool === 'none' || MARKERS.has(tool)) return;
 
-  const sz   = visualStamp / zoom;
+  const sz   = visualStamp;
   const item = {
     id: `item_${Date.now()}`,
     x: Math.max(0, logX - sz / 2),
