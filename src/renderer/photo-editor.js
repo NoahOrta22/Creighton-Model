@@ -1,5 +1,6 @@
 // ── Constants ────────────────────────────────────────────────
-const STAMP_SIZE = 54; // logical px — same height as grid stamp cells
+const STAMP_W = 30; // matches grid chart column width
+const STAMP_H = 54; // matches grid chart stamp cell height
 
 const STAMP_IMAGES = {
   'red':         '../../assets/red-stamp.jpeg',
@@ -21,6 +22,7 @@ const ZOOM_STEP  = 0.2;
 const ZOOM_MAX   = 3.0;
 let zoom         = 1.0;
 let baseZoom     = 1.0;
+let minZoom      = 1.0; // initial fit-to-window zoom; never shrink below this
 let naturalWidth  = 0;
 let naturalHeight = 0;
 
@@ -155,6 +157,7 @@ function initZoom() {
   naturalWidth  = chartPhoto.naturalWidth  || photoCanvas.offsetWidth;
   naturalHeight = chartPhoto.naturalHeight || photoCanvas.offsetHeight;
   baseZoom = computeBaseZoom();
+  minZoom  = baseZoom;
   zoom = baseZoom;
   applyZoom();
 }
@@ -176,9 +179,10 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('resize', () => {
   if (!naturalWidth || !naturalHeight) return;
   const newBase = computeBaseZoom();
-  const wasAtBase = zoom <= baseZoom + 0.001;
-  baseZoom = newBase;
-  zoom = wasAtBase ? newBase : Math.max(newBase, zoom);
+  // Never let baseZoom drop below the initial fit zoom (minZoom).
+  // Window shrinking just makes the image overflow (scrollable); it doesn't shrink the image.
+  baseZoom = Math.max(minZoom, newBase);
+  zoom = Math.max(baseZoom, zoom);
   applyZoom();
 });
 
@@ -269,8 +273,8 @@ function createStampItemEl(item) {
   el.dataset.itemId = item.id;
   el.style.left   = item.x + 'px';
   el.style.top    = item.y + 'px';
-  el.style.width  = STAMP_SIZE + 'px';
-  el.style.height = STAMP_SIZE + 'px';
+  el.style.width  = STAMP_W + 'px';
+  el.style.height = STAMP_H + 'px';
 
   const content = document.createElement('div');
   content.className = 'photo-item-content';
@@ -449,8 +453,8 @@ photoCanvas.addEventListener('click', (e) => {
   if (MARKERS.has(tool)) return; // markers go on existing stamps
 
   const rect = chartPhoto.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / zoom - STAMP_SIZE / 2;
-  const y = (e.clientY - rect.top)  / zoom - STAMP_SIZE / 2;
+  const x = (e.clientX - rect.left) / zoom - STAMP_W / 2;
+  const y = (e.clientY - rect.top)  / zoom - STAMP_H / 2;
 
   pushUndo();
 
