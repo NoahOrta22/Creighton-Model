@@ -860,7 +860,7 @@ button, input, textarea, select, a,
   position: absolute;
   min-width: 60px;
   min-height: 24px;
-  background: rgba(255, 253, 240, 0.3);
+  background: rgba(255, 253, 240, 0.2);
   border: 1.5px dashed transparent;
   border-radius: 4px;
   display: flex;
