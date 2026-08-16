@@ -488,7 +488,10 @@ function createTextBoxEl(tb) {
   });
 
   div.addEventListener('click',     (e) => e.stopPropagation());
-  div.addEventListener('mousedown', (e) => e.stopPropagation());
+  // Interacting with a text box (dragging its handle, clicking into it to
+  // type) is its own kind of selection — clear any selected stamp so only
+  // one thing is selected at a time.
+  div.addEventListener('mousedown', (e) => { e.stopPropagation(); deselectItem(); });
 
   makeTbDraggable(div, handle, tb);
 
