@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photo Chart</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="photo-editor-screen">
+
+    <!-- Top toolbar -->
+    <div class="editor-toolbar">
+      <button class="btn btn-ghost" id="back-btn">← Charts</button>
+      <input type="text" class="chart-name-input" id="chart-name-input" placeholder="Chart name" />
+      <div class="zoom-controls">
+        <button class="btn btn-ghost zoom-btn" id="zoom-out-btn" title="Zoom out (⌘−)">−</button>
+        <span class="zoom-level" id="zoom-level">100%</span>
+        <button class="btn btn-ghost zoom-btn" id="zoom-in-btn" title="Zoom in (⌘=)">+</button>
+        <button class="btn btn-ghost zoom-reset" id="zoom-reset-btn" title="Reset zoom (⌘0)">Reset</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="upload-photo-btn" title="Replace the chart photo">Upload Photo</button>
+        <button class="btn btn-secondary" id="save-btn">Save</button>
+      </div>
+    </div>
+
+    <!-- Stamp + marker picker -->
+    <div class="stamp-toolbar">
+      <span class="stamp-toolbar-label">Stamp</span>
+      <div class="stamp-picker">
+        <button class="stamp-option active" data-tool="red" title="Red — Menstruation/bleeding">
+          <img src="../../assets/red-stamp.jpeg" alt="Red" />
+        </button>
+        <button class="stamp-option" data-tool="yellow" title="Yellow — Same discharge pattern">
+          <img src="../../assets/yellow-stamp.jpeg" alt="Yellow" />
+        </button>
+        <button class="stamp-option" data-tool="green" title="Green — Dry / infertile">
+          <img src="../../assets/green-stamp.png" alt="Green" />
+        </button>
+        <button class="stamp-option" data-tool="yellow-baby" title="Yellow Baby — Fertile discharge">
+          <img src="../../assets/yellow-baby-stamp.png" alt="Yellow Baby" />
+        </button>
+        <button class="stamp-option" data-tool="white-baby" title="White Baby — Peak-type mucus">
+          <img src="../../assets/white-baby-stamp.png" alt="White Baby" />
+        </button>
+        <button class="stamp-option" data-tool="green-baby" title="Green Baby — Green/fertile">
+          <img src="../../assets/green-baby-stamp.png" alt="Green Baby" />
+        </button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-option marker-option" data-tool="P" title="P — Peak day">P</button>
+        <button class="stamp-option marker-option" data-tool="1" title="1 — 1st day after Peak">1</button>
+        <button class="stamp-option marker-option" data-tool="2" title="2 — 2nd day after Peak">2</button>
+        <button class="stamp-option marker-option" data-tool="3" title="3 — 3rd day after Peak">3</button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-option marker-option" data-tool="I" title="I — Intercourse">I</button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-mode-btn" id="correction-toggle" title="Correction mode — stamps tilt right, markers and text appear in red">Correction</button>
+        <button class="stamp-option eraser" data-tool="none" title="Erase stamp / correction layer">✕</button>
+
+        <div class="stamp-divider"></div>
+
+        <button class="stamp-mode-btn" id="text-box-btn" title="Add a floating text note to the chart">Text Box</button>
+      </div>
+    </div>
+
+    <!-- Photo area -->
+    <div class="photo-area" id="photo-area">
+      <div class="photo-canvas" id="photo-canvas">
+        <img id="chart-photo" alt="Chart" draggable="false" />
+      </div>
+    </div>
+
+  </div>
+  <script src="photo-editor.js"></script>
+</body>
+</html>

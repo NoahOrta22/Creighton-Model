@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const fs = require('fs');
+const fs   = require('fs');
 
 let mainWindow;
 
@@ -41,6 +41,12 @@ function chartsDir() {
   return dir;
 }
 
+function imagesDir() {
+  const dir = path.join(app.getPath('userData'), 'images');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
 // --- IPC handlers ---
 
 ipcMain.handle('list-charts', () => {
@@ -52,7 +58,7 @@ ipcMain.handle('list-charts', () => {
       const stat = fs.statSync(filePath);
       try {
         const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        return { id: f.replace('.json', ''), name: data.name, lastEdited: stat.mtimeMs };
+        return { id: f.replace('.json', ''), name: data.name, type: data.type || 'grid', lastEdited: stat.mtimeMs };
       } catch {
         return null;
       }
@@ -94,6 +100,21 @@ ipcMain.handle('write-export-file', (_e, filePath, base64Data, mimeType) => {
   const buf = Buffer.from(base64Data, 'base64');
   fs.writeFileSync(filePath, buf);
   return true;
+});
+
+ipcMain.handle('select-chart-image', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'PNG', 'JPG', 'JPEG'] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+
+  const srcPath = result.filePaths[0];
+  const ext     = path.extname(srcPath).toLowerCase();
+  const imageId = `img_${Date.now()}`;
+  const destPath = path.join(imagesDir(), `${imageId}${ext}`);
+  fs.copyFileSync(srcPath, destPath);
+  return destPath;
 });
 
 ipcMain.handle('get-assets-path', () => {

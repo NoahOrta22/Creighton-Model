@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('api', {
   writeExportFile: (filePath, base64Data, mimeType) =>
     ipcRenderer.invoke('write-export-file', filePath, base64Data, mimeType),
   getAssetsPath: () => ipcRenderer.invoke('get-assets-path'),
+  selectChartImage: () => ipcRenderer.invoke('select-chart-image'),
 });
