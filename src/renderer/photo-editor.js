@@ -1,7 +1,12 @@
 // ── Constants ────────────────────────────────────────────────
 // Size of stamps in logical photo pixels. Scales naturally with CSS zoom
 // so stamps stay in the same position and proportion as the photo when zooming.
-let visualStamp = 60;
+const DEFAULT_STAMP_SIZE = 60;
+// Size applied to newly-placed stamps when nothing is selected. Existing
+// stamps carry their own `size`; old saved items without one fall back to
+// DEFAULT_STAMP_SIZE wherever they're read.
+let newStampSize = DEFAULT_STAMP_SIZE;
+let selectedItemId = null;
 
 const STAMP_IMAGES = {
   'red':         '../../assets/red-stamp.jpeg',
@@ -61,8 +66,10 @@ function applyUndo() {
   const prev = undoStack.pop();
   chartData.items     = prev.items;
   chartData.textBoxes = prev.textBoxes;
+  if (selectedItemId && !chartData.items.some(i => i.id === selectedItemId)) selectedItemId = null;
   renderItems();
   updateHistoryBtns();
+  updateStampSizeDisplay();
   setDirty();
 }
 
@@ -72,8 +79,10 @@ function applyRedo() {
   const next = redoStack.pop();
   chartData.items     = next.items;
   chartData.textBoxes = next.textBoxes;
+  if (selectedItemId && !chartData.items.some(i => i.id === selectedItemId)) selectedItemId = null;
   renderItems();
   updateHistoryBtns();
+  updateStampSizeDisplay();
   setDirty();
 }
 
@@ -176,15 +185,43 @@ zoomInBtn.addEventListener('click',    () => setZoom(zoom + ZOOM_STEP));
 zoomOutBtn.addEventListener('click',   () => setZoom(zoom - ZOOM_STEP));
 zoomResetBtn.addEventListener('click', () => setZoom(baseZoom));
 
-function setStampSize(px) {
-  visualStamp = Math.min(200, Math.max(20, px));
-  stampSizeDisplay.textContent = visualStamp;
-  stampSizeDownBtn.disabled = visualStamp <= 20;
-  stampSizeUpBtn.disabled   = visualStamp >= 200;
+function getSelectedItem() {
+  return selectedItemId ? chartData.items.find(i => i.id === selectedItemId) : null;
 }
 
-stampSizeDownBtn.addEventListener('click', () => setStampSize(visualStamp - 5));
-stampSizeUpBtn.addEventListener('click',   () => setStampSize(visualStamp + 5));
+// Reflects either the selected stamp's own size, or (nothing selected)
+// the default size that will be used for the next new stamp.
+function updateStampSizeDisplay() {
+  const sel  = getSelectedItem();
+  const size = sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize;
+  stampSizeDisplay.textContent = size;
+  stampSizeDownBtn.disabled = size <= 20;
+  stampSizeUpBtn.disabled   = size >= 200;
+}
+
+function setStampSize(px) {
+  const clamped = Math.min(200, Math.max(20, px));
+  const sel = getSelectedItem();
+  if (sel) {
+    pushUndo();
+    sel.size = clamped;
+    const el = photoCanvas.querySelector(`[data-item-id="${sel.id}"]`);
+    if (el) { el.style.width = clamped + 'px'; el.style.height = clamped + 'px'; }
+    setDirty();
+  } else {
+    newStampSize = clamped;
+  }
+  updateStampSizeDisplay();
+}
+
+stampSizeDownBtn.addEventListener('click', () => {
+  const sel = getSelectedItem();
+  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) - 5);
+});
+stampSizeUpBtn.addEventListener('click', () => {
+  const sel = getSelectedItem();
+  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) + 5);
+});
 
 window.addEventListener('keydown', (e) => {
   if (!e.metaKey && !e.ctrlKey) return;
@@ -219,11 +256,26 @@ photoArea.addEventListener('wheel', (e) => {
   photoArea.scrollTop  = contentY * zoom - mouseY;
 }, { passive: false });
 
+// ── Stamp selection (Pan mode only) ───────────────────────────
+function selectItem(id) {
+  if (selectedItemId === id) return;
+  const prevEl = selectedItemId && photoCanvas.querySelector(`[data-item-id="${selectedItemId}"]`);
+  if (prevEl) prevEl.classList.remove('selected');
+  selectedItemId = id;
+  const el = id && photoCanvas.querySelector(`[data-item-id="${id}"]`);
+  if (el) el.classList.add('selected');
+  updateStampSizeDisplay();
+}
+
+function deselectItem() { selectItem(null); }
+
 // ── Toolbar ──────────────────────────────────────────────────
 toolOptions.forEach(btn => {
   btn.addEventListener('click', () => {
     toolOptions.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    // A stamp tool places new stamps; that's mutually exclusive with Pan mode's select/move.
+    if (isPanMode) { isPanMode = false; panBtn.classList.remove('active'); deselectItem(); updateModeCursor(); }
   });
 });
 
@@ -243,15 +295,18 @@ function updateModeCursor() {
 
 textBoxBtn.addEventListener('click', () => {
   isTextBoxMode = !isTextBoxMode;
-  if (isTextBoxMode) { isPanMode = false; panBtn.classList.remove('active'); }
+  if (isTextBoxMode) { isPanMode = false; panBtn.classList.remove('active'); deselectItem(); }
   textBoxBtn.classList.toggle('active', isTextBoxMode);
   updateModeCursor();
 });
 
 // ── Pan mode ─────────────────────────────────────────────────
+// Pan mode is also the only mode where existing stamps can be selected
+// (bordered), dragged to a new position, or resized via the +/- control.
 panBtn.addEventListener('click', () => {
   isPanMode = !isPanMode;
   if (isPanMode) { isTextBoxMode = false; textBoxBtn.classList.remove('active'); }
+  else { deselectItem(); }
   panBtn.classList.toggle('active', isPanMode);
   updateModeCursor();
 });
@@ -328,7 +383,7 @@ function createStampItemEl(item) {
   el.dataset.itemId = item.id;
   el.style.left   = item.x + 'px';
   el.style.top    = item.y + 'px';
-  const sz = visualStamp;
+  const sz = item.size || DEFAULT_STAMP_SIZE;
   el.style.width  = sz + 'px';
   el.style.height = sz + 'px';
 
@@ -338,6 +393,7 @@ function createStampItemEl(item) {
 
   renderItemContent(content, item);
   el.classList.toggle('has-correction', !!(item.correctionStamp || item.correctionMarker));
+  el.classList.toggle('selected', item.id === selectedItemId);
 
   return el; // interaction is handled at the canvas level
 }
@@ -433,27 +489,31 @@ function createTextBoxEl(tb) {
 // ── Canvas-level stamp interaction ────────────────────────────
 // Hit test in logical coords. Checks stamps back-to-front (topmost first).
 function stampAt(logX, logY) {
-  const sz = visualStamp;
-  return [...chartData.items].reverse().find(item =>
-    logX >= item.x && logX <= item.x + sz &&
-    logY >= item.y && logY <= item.y + sz
-  );
+  return [...chartData.items].reverse().find(item => {
+    const sz = item.size || DEFAULT_STAMP_SIZE;
+    return logX >= item.x && logX <= item.x + sz &&
+           logY >= item.y && logY <= item.y + sz;
+  });
 }
 
 // Track active drag so the click handler can tell drag-ends from real clicks.
+// Dragging an existing stamp is only possible in Pan mode — outside Pan
+// mode, mousedown/click on a stamp is handled entirely by the click handler
+// below (edit-in-place for marker/eraser tools, always-place-new for stamps).
 let activeDrag = null; // { item, el, startX, startY, startItemX, startItemY, moved }
 
 photoCanvas.addEventListener('mousedown', (e) => {
-  if (e.button !== 0 || isTextBoxMode || isPanMode) return;
+  if (e.button !== 0 || isTextBoxMode || !isPanMode) return;
 
   // Use photoCanvas as origin — stamps are positioned relative to it.
   const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
   const hit  = stampAt(logX, logY);
-  if (!hit) return;
+  if (!hit) return; // let it bubble to photoArea's pan-scroll handler
 
   e.preventDefault();
+  e.stopPropagation(); // don't also start a page-pan drag
   const el = photoCanvas.querySelector(`[data-item-id="${hit.id}"]`);
   activeDrag = { item: hit, el, startX: e.clientX, startY: e.clientY,
                  startItemX: hit.x, startItemY: hit.y, moved: false };
@@ -485,9 +545,9 @@ photoCanvas.addEventListener('mousedown', (e) => {
   document.addEventListener('mouseup', onUpCursor);
 });
 
-// Show hand cursor when hovering over a stamp
+// Show grab cursor when hovering a stamp in Pan mode (the only mode stamps can be picked up in)
 photoCanvas.addEventListener('mousemove', (e) => {
-  if (activeDrag || isPanMode) return;
+  if (activeDrag || !isPanMode) { photoCanvas.style.cursor = ''; return; }
   const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
@@ -499,24 +559,32 @@ photoCanvas.addEventListener('mouseleave', () => {
 });
 
 photoCanvas.addEventListener('click', (e) => {
-  if (isTextBoxMode || isPanMode) return;
+  if (isTextBoxMode) return;
 
   const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
-  const hit  = stampAt(logX, logY);
+
+  // ── Pan mode: click selects/deselects a stamp; never places or edits one ──
+  if (isPanMode) {
+    if (activeDrag && activeDrag.moved) { activeDrag = null; return; } // end of a drag, not a select
+    activeDrag = null;
+    const hit = stampAt(logX, logY);
+    selectItem(hit ? hit.id : null);
+    return;
+  }
+
+  const tool = getActiveTool();
+  // Only the marker and eraser tools still edit whatever's under the click —
+  // a color/stamp tool always places a brand-new stamp, even on top of one.
+  const hit = (tool === 'none' || MARKERS.has(tool)) ? stampAt(logX, logY) : null;
 
   if (hit) {
-    // End of a drag — don't apply tool
-    if (activeDrag && activeDrag.item === hit && activeDrag.moved) { activeDrag = null; return; }
-    activeDrag = null;
-
-    const tool    = getActiveTool();
     const el      = photoCanvas.querySelector(`[data-item-id="${hit.id}"]`);
     const content = el.querySelector('.photo-item-content');
 
+    pushUndo();
     if (tool === 'none') {
-      pushUndo();
       if (isCorrectionMode) {
         hit.correctionStamp  = null;
         hit.correctionMarker = null;
@@ -524,14 +592,9 @@ photoCanvas.addEventListener('click', (e) => {
       } else {
         chartData.items = chartData.items.filter(i => i.id !== hit.id); el.remove(); setDirty(); return;
       }
-    } else if (MARKERS.has(tool)) {
-      pushUndo();
+    } else { // marker tool
       if (isCorrectionMode) hit.correctionMarker = hit.correctionMarker === tool ? null : tool;
       else                   hit.marker           = hit.marker           === tool ? null : tool;
-    } else {
-      pushUndo();
-      if (isCorrectionMode) hit.correctionStamp = tool;
-      else                   hit.stamp           = tool;
     }
     renderItemContent(content, hit);
     el.classList.toggle('has-correction', !!(hit.correctionStamp || hit.correctionMarker));
@@ -539,24 +602,39 @@ photoCanvas.addEventListener('click', (e) => {
     return;
   }
 
-  // End of a drag that released on empty canvas — don't place a new stamp
-  if (activeDrag && activeDrag.moved) { activeDrag = null; return; }
-  activeDrag = null;
+  if (tool === 'none' || MARKERS.has(tool)) return; // nothing under an eraser/marker click on empty canvas
 
-  const tool = getActiveTool();
-  if (tool === 'none' || MARKERS.has(tool)) return;
-
-  const sz   = visualStamp;
+  // Color/stamp tool: always place a brand-new stamp here.
+  const sz   = newStampSize;
   const item = {
     id: `item_${Date.now()}`,
     x: Math.max(0, logX - sz / 2),
     y: Math.max(0, logY - sz / 2),
+    size: sz,
     stamp: isCorrectionMode ? null : tool, marker: null,
     correctionStamp: isCorrectionMode ? tool : null, correctionMarker: null,
   };
   pushUndo();
   chartData.items.push(item);
   photoCanvas.appendChild(createStampItemEl(item));
+  setDirty();
+});
+
+// ── Delete the selected stamp (Pan mode) ───────────────────────
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+  if (!isPanMode || !selectedItemId) return;
+  if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+  e.preventDefault();
+  const item = getSelectedItem();
+  if (!item) return;
+
+  pushUndo();
+  chartData.items = chartData.items.filter(i => i.id !== item.id);
+  const el = photoCanvas.querySelector(`[data-item-id="${item.id}"]`);
+  if (el) el.remove();
+  selectItem(null);
   setDirty();
 });
 
