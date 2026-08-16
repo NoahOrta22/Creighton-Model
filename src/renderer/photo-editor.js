@@ -1,7 +1,7 @@
 // ── Constants ────────────────────────────────────────────────
 // Target on-screen size in CSS px regardless of photo zoom level.
-// Logical size = VISUAL_STAMP / zoom so stamps stay visually constant as zoom changes.
-const VISUAL_STAMP = 60;
+// Logical size = visualStamp / zoom so stamps stay visually constant as zoom changes.
+let visualStamp = 60;
 
 const STAMP_IMAGES = {
   'red':         '../../assets/red-stamp.jpeg',
@@ -93,6 +93,9 @@ const textBoxBtn      = document.getElementById('text-box-btn');
 const uploadPhotoBtn  = document.getElementById('upload-photo-btn');
 const undoBtnEl       = document.getElementById('undo-btn');
 const redoBtnEl       = document.getElementById('redo-btn');
+const stampSizeDownBtn = document.getElementById('stamp-size-down');
+const stampSizeUpBtn   = document.getElementById('stamp-size-up');
+const stampSizeDisplay = document.getElementById('stamp-size-display');
 
 // ── Dirty state & save ────────────────────────────────────────
 let isDirty = false;
@@ -143,7 +146,7 @@ function applyZoom() {
   zoomOutBtn.disabled = zoom <= baseZoom;
   zoomInBtn.disabled  = zoom >= ZOOM_MAX;
   // Keep stamps at a constant visual size regardless of zoom level.
-  const sz = VISUAL_STAMP / zoom;
+  const sz = visualStamp / zoom;
   photoCanvas.querySelectorAll('.photo-stamp-item').forEach(el => {
     el.style.width  = sz + 'px';
     el.style.height = sz + 'px';
@@ -172,6 +175,17 @@ function initZoom() {
 zoomInBtn.addEventListener('click',    () => setZoom(zoom + ZOOM_STEP));
 zoomOutBtn.addEventListener('click',   () => setZoom(zoom - ZOOM_STEP));
 zoomResetBtn.addEventListener('click', () => setZoom(baseZoom));
+
+function setStampSize(px) {
+  visualStamp = Math.min(200, Math.max(20, px));
+  stampSizeDisplay.textContent = visualStamp;
+  stampSizeDownBtn.disabled = visualStamp <= 20;
+  stampSizeUpBtn.disabled   = visualStamp >= 200;
+  applyZoom(); // triggers the stamp size update in applyZoom()
+}
+
+stampSizeDownBtn.addEventListener('click', () => setStampSize(visualStamp - 10));
+stampSizeUpBtn.addEventListener('click',   () => setStampSize(visualStamp + 10));
 
 window.addEventListener('keydown', (e) => {
   if (!e.metaKey && !e.ctrlKey) return;
@@ -280,7 +294,7 @@ function createStampItemEl(item) {
   el.dataset.itemId = item.id;
   el.style.left   = item.x + 'px';
   el.style.top    = item.y + 'px';
-  const sz = VISUAL_STAMP / zoom;
+  const sz = visualStamp / zoom;
   el.style.width  = sz + 'px';
   el.style.height = sz + 'px';
 
@@ -362,7 +376,8 @@ function createTextBoxEl(tb) {
     setDirty();
   });
 
-  div.addEventListener('click', (e) => e.stopPropagation());
+  div.addEventListener('click',     (e) => e.stopPropagation());
+  div.addEventListener('mousedown', (e) => e.stopPropagation());
 
   makeTbDraggable(div, handle, tb);
 
@@ -379,7 +394,7 @@ function createTextBoxEl(tb) {
 // ── Canvas-level stamp interaction ────────────────────────────
 // Hit test in logical coords. Checks stamps back-to-front (topmost first).
 function stampAt(logX, logY) {
-  const sz = VISUAL_STAMP / zoom;
+  const sz = visualStamp / zoom;
   return [...chartData.items].reverse().find(item =>
     logX >= item.x && logX <= item.x + sz &&
     logY >= item.y && logY <= item.y + sz
@@ -392,7 +407,8 @@ let activeDrag = null; // { item, el, startX, startY, startItemX, startItemY, mo
 photoCanvas.addEventListener('mousedown', (e) => {
   if (e.button !== 0 || isTextBoxMode) return;
 
-  const rect = chartPhoto.getBoundingClientRect();
+  // Use photoCanvas as origin — stamps are positioned relative to it.
+  const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
   const hit  = stampAt(logX, logY);
@@ -426,7 +442,7 @@ photoCanvas.addEventListener('mousedown', (e) => {
 photoCanvas.addEventListener('click', (e) => {
   if (isTextBoxMode) return;
 
-  const rect = chartPhoto.getBoundingClientRect();
+  const rect = photoCanvas.getBoundingClientRect();
   const logX = (e.clientX - rect.left) / zoom;
   const logY = (e.clientY - rect.top)  / zoom;
   const hit  = stampAt(logX, logY);
@@ -471,7 +487,7 @@ photoCanvas.addEventListener('click', (e) => {
   const tool = getActiveTool();
   if (tool === 'none' || MARKERS.has(tool)) return;
 
-  const sz   = VISUAL_STAMP / zoom;
+  const sz   = visualStamp / zoom;
   const item = {
     id: `item_${Date.now()}`,
     x: Math.max(0, logX - sz / 2),
