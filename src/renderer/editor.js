@@ -16,9 +16,9 @@ let chartData  = null;
 
 const MARKERS = new Set(['P', '1', '2', '3']);
 
-const ZOOM_STEP = 0.1;
+const ZOOM_STEP = 0.2;
 const ZOOM_MIN  = 0.4;
-const ZOOM_MAX  = 2.5;
+const ZOOM_MAX  = 2.6;
 let zoom = 1.0;
 
 // ── DOM refs ─────────────────────────────────────────────────
@@ -42,8 +42,15 @@ function applyZoom() {
   zoomInBtn.disabled  = zoom >= ZOOM_MAX;
 }
 
+// Stepped zoom for buttons and keyboard (snaps to nearest 20%)
 function setZoom(next) {
-  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next * 10) / 10));
+  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(next / ZOOM_STEP) * ZOOM_STEP));
+  applyZoom();
+}
+
+// Continuous zoom for pinch / scroll gestures (no snapping)
+function smoothZoom(delta) {
+  zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom + delta));
   applyZoom();
 }
 
@@ -57,6 +64,13 @@ window.addEventListener('keydown', (e) => {
   if (e.key === '-')                  { e.preventDefault(); setZoom(zoom - ZOOM_STEP); }
   if (e.key === '0')                  { e.preventDefault(); setZoom(1.0); }
 });
+
+// Pinch gesture (trackpad) and Ctrl+scroll (mouse) both arrive as wheel+ctrlKey on macOS
+document.getElementById('chart-area').addEventListener('wheel', (e) => {
+  if (!e.ctrlKey) return;       // let regular two-finger scroll pan the chart normally
+  e.preventDefault();
+  smoothZoom(-e.deltaY * 0.004); // negative: pinch-in (positive deltaY) → zoom out
+}, { passive: false });
 
 // ── Toolbar tool selection ────────────────────────────────────
 toolOptions.forEach(btn => {
