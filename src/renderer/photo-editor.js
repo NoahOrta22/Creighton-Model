@@ -293,21 +293,42 @@ function updateModeCursor() {
   photoArea.style.cursor = isPanMode ? 'grab' : (isTextBoxMode ? 'crosshair' : '');
 }
 
+// ── Pan mode ─────────────────────────────────────────────────
+// Pan mode is also the only mode where existing stamps can be selected
+// (bordered), dragged to a new position, or resized via the +/- control.
+// While active, no stamp tool shows as selected; the tool that was active
+// beforehand is remembered and restored when Pan mode ends.
+let toolBeforePan = null;
+
+function exitPanMode() {
+  isPanMode = false;
+  panBtn.classList.remove('active');
+  deselectItem();
+  (toolBeforePan || toolOptions[0]).classList.add('active');
+  toolBeforePan = null;
+}
+
 textBoxBtn.addEventListener('click', () => {
   isTextBoxMode = !isTextBoxMode;
-  if (isTextBoxMode) { isPanMode = false; panBtn.classList.remove('active'); deselectItem(); }
+  if (isTextBoxMode) {
+    if (isPanMode) exitPanMode();
+    else deselectItem();
+  }
   textBoxBtn.classList.toggle('active', isTextBoxMode);
   updateModeCursor();
 });
 
-// ── Pan mode ─────────────────────────────────────────────────
-// Pan mode is also the only mode where existing stamps can be selected
-// (bordered), dragged to a new position, or resized via the +/- control.
 panBtn.addEventListener('click', () => {
-  isPanMode = !isPanMode;
-  if (isPanMode) { isTextBoxMode = false; textBoxBtn.classList.remove('active'); }
-  else { deselectItem(); }
-  panBtn.classList.toggle('active', isPanMode);
+  if (isPanMode) {
+    exitPanMode();
+  } else {
+    isPanMode = true;
+    isTextBoxMode = false;
+    textBoxBtn.classList.remove('active');
+    toolBeforePan = document.querySelector('.stamp-option.active');
+    toolOptions.forEach(b => b.classList.remove('active'));
+    panBtn.classList.add('active');
+  }
   updateModeCursor();
 });
 
