@@ -721,17 +721,26 @@ button, input, textarea, select, a,
   color: #b01010;
 }
 
-/* ── Correction stamp overlay (tilted 20° over base, overflows adjacent cells) ── */
+/* ── Correction stamp overlay — 20° tilt, extends into adjacent cells ── */
+/* Image is 140% of parent size, centered via negative offsets, then rotated.
+   This ensures the full stamp is visible as it overlaps neighboring cells. */
 .stamp-cell .correction-img,
 .photo-item-content .correction-img {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
   object-fit: cover;
-  transform: rotate(20deg) scale(0.9);
+  transform: rotate(20deg);
   pointer-events: none;
   z-index: 3;
+}
+
+/* Ensure correction overflow is never clipped by intermediate containers */
+.stamp-sub-row,
+.cycle-row {
+  overflow: visible;
 }
 
 /* ── Correction marker (red) ── */
