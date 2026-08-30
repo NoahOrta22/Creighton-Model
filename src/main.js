@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs   = require('fs');
 
@@ -22,8 +23,63 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'home.html'));
 }
 
+// --- Auto-update (electron-updater / GitHub Releases) ---
+// Only meaningful in a packaged build: there is no update feed to hit when
+// running via `electron .` in dev, and electron-updater errors out noisily
+// if it tries. It only ever replaces the installed app bundle — it never
+// touches userData(), where all charts/images/folders live.
+const UPDATE_CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+function initAutoUpdater() {
+  if (!app.isPackaged) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('error', (err) => {
+    // Covers offline users, GitHub being unreachable, etc. — never fatal.
+    console.error('[auto-updater] error:', err?.stack || err?.message || err);
+  });
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log('[auto-updater] checking for update…');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('[auto-updater] update available:', info.version, '— downloading in background');
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('[auto-updater] already on the latest version');
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update Ready',
+      message: `Version ${info.version} has been downloaded.`,
+      detail: 'Restart the app to install it. Your saved charts are stored separately and will not be affected.',
+      buttons: ['Restart Now', 'Later'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+
+  const checkForUpdates = () => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error('[auto-updater] check failed:', err?.message || err);
+    });
+  };
+
+  checkForUpdates();
+  setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL_MS);
+}
+
 app.whenReady().then(() => {
   createWindow();
+  initAutoUpdater();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
