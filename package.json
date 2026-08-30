@@ -5,7 +5,8 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --mac"
+    "build": "electron-builder --mac",
+    "release": "electron-builder --mac --publish always"
   },
   "devDependencies": {
     "electron": "^35.0.0",
@@ -16,7 +17,10 @@
     "productName": "Creighton Model Chart",
     "mac": {
       "category": "public.app-category.medical",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "files": [
       "src/**/*",
@@ -27,6 +31,14 @@
         "from": "assets",
         "to": "assets"
       }
-    ]
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "NoahOrta22",
+      "repo": "Creighton-Model"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }
