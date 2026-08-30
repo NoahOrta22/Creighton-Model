@@ -1,7 +1,7 @@
 // ── Constants ────────────────────────────────────────────────
 // Size of stamps in logical photo pixels. Scales naturally with CSS zoom
 // so stamps stay in the same position and proportion as the photo when zooming.
-const DEFAULT_STAMP_SIZE = 60;
+const DEFAULT_STAMP_SIZE = 100;
 // Size applied to newly-placed stamps when nothing is selected. Existing
 // stamps carry their own `size`; old saved items without one fall back to
 // DEFAULT_STAMP_SIZE wherever they're read.
@@ -227,11 +227,11 @@ function setStampSize(px) {
 
 stampSizeDownBtn.addEventListener('click', () => {
   const sel = getSelectedItem();
-  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) - 5);
+  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) - 10);
 });
 stampSizeUpBtn.addEventListener('click', () => {
   const sel = getSelectedItem();
-  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) + 5);
+  setStampSize((sel ? (sel.size || DEFAULT_STAMP_SIZE) : newStampSize) + 10);
 });
 
 stampSizeDisplay.addEventListener('focus', () => stampSizeDisplay.select());

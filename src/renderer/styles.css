@@ -85,6 +85,52 @@ button, input, textarea, select, a,
   letter-spacing: -0.3px;
 }
 
+/* ── Folder breadcrumb ── */
+.folder-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px 0;
+}
+
+.folder-breadcrumb.hidden { display: none; }
+
+.breadcrumb-folder-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--brown);
+}
+
+/* ── Folder picker (move-to-folder modal) ── */
+.folder-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.folder-picker-item {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--cream);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--brown);
+  cursor: pointer;
+}
+
+.folder-picker-item:hover { background: #efe4d5; }
+
+.folder-picker-empty {
+  font-size: 13px;
+  color: #a89888;
+  text-align: center;
+  padding: 10px 0;
+}
+
 /* ── Chart grid ── */
 .chart-list {
   flex: 1;
@@ -152,6 +198,10 @@ button, input, textarea, select, a,
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.chart-card-thumb.folder-thumb {
+  background: #f5ead9;
 }
 
 .chart-card-body {
