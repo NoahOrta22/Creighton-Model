@@ -35,7 +35,8 @@
     "publish": {
       "provider": "github",
       "owner": "NoahOrta22",
-      "repo": "Creighton-Model"
+      "repo": "Creighton-Model",
+      "releaseType": "release"
     }
   },
   "dependencies": {
