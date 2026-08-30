@@ -1,6 +1,6 @@
 {
   "name": "creighton-model-chart",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Creighton Model NaProTRACKING chart editor",
   "main": "src/main.js",
   "scripts": {
