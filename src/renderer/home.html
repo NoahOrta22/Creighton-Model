@@ -11,9 +11,15 @@
     <div class="home-header" style="padding-top: 20px; padding-left: 88px;">
       <h1>My Charts</h1>
       <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" id="new-folder-btn">+ Folder</button>
         <button class="btn btn-secondary" id="new-photo-chart-btn">+ Photo Chart</button>
         <button class="btn btn-primary" id="new-chart-btn">+ New Chart</button>
       </div>
+    </div>
+
+    <div class="folder-breadcrumb hidden" id="folder-breadcrumb">
+      <button class="btn btn-ghost" id="breadcrumb-back-btn">← All Charts</button>
+      <span class="breadcrumb-folder-name" id="breadcrumb-folder-name"></span>
     </div>
 
     <div class="chart-list" id="chart-list">
@@ -21,7 +27,7 @@
     </div>
   </div>
 
-  <!-- New / Rename chart modal -->
+  <!-- New / Rename chart / New / Rename folder modal -->
   <div class="modal-overlay hidden" id="modal-overlay">
     <div class="modal">
       <h2 id="modal-title">New Chart</h2>
@@ -29,6 +35,19 @@
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
         <button class="btn btn-primary" id="modal-confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Move chart to folder modal -->
+  <div class="modal-overlay hidden" id="move-modal-overlay">
+    <div class="modal">
+      <h2>Move to Folder</h2>
+      <div class="folder-picker" id="folder-picker-list">
+        <!-- populated by home.js -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="move-modal-cancel">Cancel</button>
       </div>
     </div>
   </div>

@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke('write-export-file', filePath, base64Data, mimeType),
   getAssetsPath: () => ipcRenderer.invoke('get-assets-path'),
   selectChartImage: () => ipcRenderer.invoke('select-chart-image'),
+  listFolders: () => ipcRenderer.invoke('list-folders'),
+  createFolder: (name) => ipcRenderer.invoke('create-folder', name),
+  renameFolder: (id, name) => ipcRenderer.invoke('rename-folder', id, name),
+  deleteFolder: (id) => ipcRenderer.invoke('delete-folder', id),
 });

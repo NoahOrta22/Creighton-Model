@@ -47,6 +47,24 @@ function imagesDir() {
   return dir;
 }
 
+function foldersFile() {
+  return path.join(app.getPath('userData'), 'folders.json');
+}
+
+function loadFolders() {
+  const file = foldersFile();
+  if (!fs.existsSync(file)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function saveFolders(folders) {
+  fs.writeFileSync(foldersFile(), JSON.stringify(folders, null, 2), 'utf8');
+}
+
 // --- IPC handlers ---
 
 ipcMain.handle('list-charts', () => {
@@ -58,13 +76,58 @@ ipcMain.handle('list-charts', () => {
       const stat = fs.statSync(filePath);
       try {
         const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        return { id: f.replace('.json', ''), name: data.name, type: data.type || 'grid', lastEdited: stat.mtimeMs };
+        return {
+          id: f.replace('.json', ''),
+          name: data.name,
+          type: data.type || 'grid',
+          folderId: data.folderId || null,
+          lastEdited: stat.mtimeMs,
+        };
       } catch {
         return null;
       }
     })
     .filter(Boolean)
     .sort((a, b) => b.lastEdited - a.lastEdited);
+});
+
+ipcMain.handle('list-folders', () => loadFolders());
+
+ipcMain.handle('create-folder', (_e, name) => {
+  const folders = loadFolders();
+  const folder = { id: `folder_${Date.now()}`, name, createdAt: Date.now() };
+  folders.push(folder);
+  saveFolders(folders);
+  return folder;
+});
+
+ipcMain.handle('rename-folder', (_e, id, name) => {
+  const folders = loadFolders();
+  const folder = folders.find(f => f.id === id);
+  if (folder) folder.name = name;
+  saveFolders(folders);
+  return true;
+});
+
+ipcMain.handle('delete-folder', (_e, id) => {
+  const folders = loadFolders().filter(f => f.id !== id);
+  saveFolders(folders);
+
+  // Charts that were inside this folder become unfiled rather than disappearing.
+  const dir = chartsDir();
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+    const filePath = path.join(dir, f);
+    try {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (data.folderId === id) {
+        data.folderId = null;
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      }
+    } catch {
+      // skip unreadable chart files
+    }
+  }
+  return true;
 });
 
 ipcMain.handle('load-chart', (_e, id) => {
