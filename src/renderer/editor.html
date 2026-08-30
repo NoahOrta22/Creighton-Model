@@ -24,6 +24,7 @@
         <button class="btn btn-ghost zoom-reset" id="zoom-reset-btn" title="Reset zoom (⌘0)">Reset</button>
       </div>
       <div class="toolbar-right">
+        <button class="btn btn-ghost history-btn" id="help-btn" title="How to use this chart">ⓘ</button>
         <button class="btn btn-secondary" id="text-box-btn" title="Add a floating text box to the chart">Text Box</button>
         <button class="btn btn-secondary" id="export-btn" disabled title="Coming soon">Export</button>
         <button class="btn btn-secondary" id="save-btn">Save</button>
@@ -85,6 +86,68 @@
     </div>
 
   </div>
+
+  <!-- Help modal -->
+  <div class="modal-overlay hidden" id="help-modal-overlay">
+    <div class="modal help-modal">
+      <div class="help-modal-header">
+        <h2>How to Use This Chart</h2>
+        <button class="btn btn-ghost help-modal-close" id="help-modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="help-modal-body">
+
+        <div class="help-section">
+          <h3>Placing Stamps</h3>
+          <p>Pick a color from the Stamp row, then click a day's <strong>Stamp</strong> cell to apply it.</p>
+          <ul>
+            <li><img class="help-stamp-icon" src="../../assets/red-stamp.jpeg" alt="" /><strong>Red</strong> — Menstruation / bleeding</li>
+            <li><img class="help-stamp-icon" src="../../assets/yellow-stamp.jpeg" alt="" /><strong>Yellow</strong> — Same discharge pattern</li>
+            <li><img class="help-stamp-icon" src="../../assets/green-stamp.png" alt="" /><strong>Green</strong> — Dry / infertile</li>
+            <li><img class="help-stamp-icon" src="../../assets/yellow-baby-stamp.png" alt="" /><strong>Yellow Baby</strong> — Fertile discharge</li>
+            <li><img class="help-stamp-icon" src="../../assets/white-baby-stamp.png" alt="" /><strong>White Baby</strong> — Peak-type mucus</li>
+            <li><img class="help-stamp-icon" src="../../assets/green-baby-stamp.png" alt="" /><strong>Green Baby</strong> — Green / fertile</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>Peak &amp; Fertility Markers</h3>
+          <p>Click <strong>P</strong>, <strong>1</strong>, <strong>2</strong>, <strong>3</strong>, or <strong>I</strong>, then click a day's Stamp cell to toggle that marker on or off. A day can carry one stamp color and one marker at the same time.</p>
+          <ul>
+            <li><strong>P</strong> — Peak day</li>
+            <li><strong>1 / 2 / 3</strong> — 1st, 2nd, 3rd fertile day after Peak</li>
+            <li><strong>I</strong> — Intercourse</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>Correction Mode</h3>
+          <p>Turn on <strong>Correction</strong> before making a change to mark it as a professional correction rather than the client's original entry — corrected stamps, markers, dates, and descriptions appear tilted or in red. Turn it back off to return to normal entries.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Erasing</h3>
+          <p>Click <strong>✕</strong>, then click a day's Stamp cell to clear its stamp and marker (clears the correction layer instead if Correction is on).</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Date &amp; Description</h3>
+          <p>Type directly into a day's Date or Description cell. Press Tab / Shift+Tab to move to the next or previous day.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Text Boxes</h3>
+          <p>Click <strong>Text Box</strong>, then click anywhere on the chart to drop a note. Drag it by its top edge to move it, and hover over it to reveal the delete button.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Rows, Zoom &amp; Saving</h3>
+          <p><strong>+ Add Cycle Row</strong> adds another 35-day cycle to the chart. Zoom with the toolbar controls or ⌘+ / ⌘− / ⌘0. ⌘Z and ⌘⇧Z undo and redo. ⌘S saves the chart.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script src="editor.js"></script>
 </body>
 </html>

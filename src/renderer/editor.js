@@ -89,6 +89,21 @@ const redoBtnEl        = document.getElementById('redo-btn');
 undoBtnEl.addEventListener('click', applyUndo);
 redoBtnEl.addEventListener('click', applyRedo);
 
+// ── Help modal ───────────────────────────────────────────────
+const helpBtn           = document.getElementById('help-btn');
+const helpModalOverlay  = document.getElementById('help-modal-overlay');
+const helpModalClose    = document.getElementById('help-modal-close');
+
+function openHelpModal()  { helpModalOverlay.classList.remove('hidden'); }
+function closeHelpModal() { helpModalOverlay.classList.add('hidden'); }
+
+helpBtn.addEventListener('click', openHelpModal);
+helpModalClose.addEventListener('click', closeHelpModal);
+helpModalOverlay.addEventListener('click', (e) => { if (e.target === helpModalOverlay) closeHelpModal(); });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !helpModalOverlay.classList.contains('hidden')) closeHelpModal();
+});
+
 // ── Dirty state & save ────────────────────────────────────────
 let isDirty = false;
 
