@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs   = require('fs');
@@ -29,12 +29,21 @@ function createWindow() {
 // if it tries. It only ever replaces the installed app bundle — it never
 // touches userData(), where all charts/images/folders live.
 const UPDATE_CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours
+const RELEASES_URL = 'https://github.com/NoahOrta22/Creighton-Model/releases/latest';
+
+// Silent background-download-then-relaunch updates require the app to be
+// code-signed with an Apple Developer ID — on macOS, electron-updater refuses
+// to install an update whose signature it can't validate against the running
+// app. Without that certificate, the best we can do there is detect a new
+// version and send the user to download it themselves. Windows/Linux don't
+// have this restriction, so they get the full silent flow.
+const CAN_AUTO_INSTALL = process.platform !== 'darwin';
 
 function initAutoUpdater() {
   if (!app.isPackaged) return;
 
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoDownload = CAN_AUTO_INSTALL;
+  autoUpdater.autoInstallOnAppQuit = CAN_AUTO_INSTALL;
 
   autoUpdater.on('error', (err) => {
     // Covers offline users, GitHub being unreachable, etc. — never fatal.
@@ -46,7 +55,22 @@ function initAutoUpdater() {
   });
 
   autoUpdater.on('update-available', (info) => {
-    console.log('[auto-updater] update available:', info.version, '— downloading in background');
+    if (CAN_AUTO_INSTALL) {
+      console.log('[auto-updater] update available:', info.version, '— downloading in background');
+      return;
+    }
+    console.log('[auto-updater] update available:', info.version, '— prompting for manual download (unsigned build)');
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Update Available',
+      message: `Version ${info.version} is available.`,
+      detail: "This build isn't code-signed, so it can't install updates automatically. Download it from GitHub and replace the app in Applications — your saved charts are stored separately and won't be affected.",
+      buttons: ['View Release', 'Later'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then(({ response }) => {
+      if (response === 0) shell.openExternal(RELEASES_URL);
+    });
   });
 
   autoUpdater.on('update-not-available', () => {
