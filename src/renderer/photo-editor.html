@@ -24,6 +24,7 @@
         <button class="btn btn-ghost zoom-reset" id="zoom-reset-btn" title="Reset zoom (⌘0)">Reset</button>
       </div>
       <div class="toolbar-right">
+        <button class="btn btn-ghost history-btn" id="help-btn" title="How to use this chart">ⓘ</button>
         <button class="btn btn-secondary" id="upload-photo-btn" title="Replace the chart photo">Upload Photo</button>
         <button class="btn btn-secondary" id="save-btn">Save</button>
       </div>
@@ -95,6 +96,73 @@
     </div>
 
   </div>
+
+  <!-- Help modal -->
+  <div class="modal-overlay hidden" id="help-modal-overlay">
+    <div class="modal help-modal">
+      <div class="help-modal-header">
+        <h2>How to Use This Chart</h2>
+        <button class="btn btn-ghost help-modal-close" id="help-modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="help-modal-body">
+
+        <div class="help-section">
+          <h3>Placing Stamps</h3>
+          <p>Pick a color from the Stamp row, then click anywhere on the photo to place it there.</p>
+          <ul>
+            <li><img class="help-stamp-icon" src="../../assets/red-stamp.jpeg" alt="" /><strong>Red</strong> — Menstruation / bleeding</li>
+            <li><img class="help-stamp-icon" src="../../assets/yellow-stamp.jpeg" alt="" /><strong>Yellow</strong> — Same discharge pattern</li>
+            <li><img class="help-stamp-icon" src="../../assets/green-stamp.png" alt="" /><strong>Green</strong> — Dry / infertile</li>
+            <li><img class="help-stamp-icon" src="../../assets/yellow-baby-stamp.png" alt="" /><strong>Yellow Baby</strong> — Fertile discharge</li>
+            <li><img class="help-stamp-icon" src="../../assets/white-baby-stamp.png" alt="" /><strong>White Baby</strong> — Peak-type mucus</li>
+            <li><img class="help-stamp-icon" src="../../assets/green-baby-stamp.png" alt="" /><strong>Green Baby</strong> — Green / fertile</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>Peak &amp; Fertility Markers</h3>
+          <p>Click <strong>P</strong>, <strong>1</strong>, <strong>2</strong>, <strong>3</strong>, or <strong>I</strong>, then click anywhere on the photo to place it.</p>
+          <ul>
+            <li><strong>P</strong> — Peak day</li>
+            <li><strong>1 / 2 / 3</strong> — 1st, 2nd, 3rd day after Peak</li>
+            <li><strong>I</strong> — Intercourse</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>Moving, Resizing &amp; Deleting Stamps</h3>
+          <p>Switch to <strong>Pan mode</strong> (the hand icon) to drag empty space and scroll the photo. In Pan mode, click an existing stamp to select it — drag it to move, press Delete/Backspace to remove it, or use the size control to resize it.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Stamp Size</h3>
+          <p>The size box shows the selected stamp's size, or the size new stamps will use if nothing's selected. Click −/+ to adjust by 10, or type an exact size (20–200).</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Correction Mode</h3>
+          <p>Turn on <strong>Correction</strong> before placing a stamp, marker, or text to mark it as a professional correction rather than the client's original entry — corrected items appear tilted or in red. Turn it back off to return to normal entries.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Erasing</h3>
+          <p>Click <strong>✕</strong>, then click directly on a stamp or marker on the photo to remove it (removes its correction layer instead if Correction is on).</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Text Boxes</h3>
+          <p>Click <strong>Text Box</strong>, then click anywhere on the photo to drop a note.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Photo, Zoom &amp; Saving</h3>
+          <p><strong>Upload Photo</strong> replaces the chart's background image without affecting your stamps or notes. Zoom with the toolbar controls or ⌘+ / ⌘− / ⌘0. ⌘Z and ⌘⇧Z undo and redo. ⌘S saves the chart.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script src="photo-editor.js"></script>
 </body>
 </html>

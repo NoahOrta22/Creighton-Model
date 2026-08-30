@@ -333,6 +333,71 @@ button, input, textarea, select, a,
   padding: 8px 20px;
 }
 
+/* ── Help modal (editor + photo editor) ── */
+.help-modal {
+  width: 560px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 96px);
+}
+
+.help-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.help-modal-close {
+  font-size: 13px;
+  padding: 4px 9px;
+}
+
+.help-modal-body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 4px;
+}
+
+.help-section h3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
+.help-section p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--brown-light);
+}
+
+.help-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.help-section li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--brown-light);
+}
+
+.help-stamp-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 /* ═══════════════════════════════════════════════════════════
    EDITOR SCREEN
    ═══════════════════════════════════════════════════════════ */
